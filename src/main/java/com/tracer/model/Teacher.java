@@ -1,11 +1,17 @@
-package com.tracer.entity;
+package com.tracer.model;
 
 import jakarta.persistence.*;
+import lombok.*;
 
-import java.util.Set;
+import java.util.List;
 
 @Entity
 @Table(name = "teachers")
+@EqualsAndHashCode
+@ToString
+@Builder
+@Getter
+@Setter
 public class Teacher {
 
     @Id
@@ -17,5 +23,5 @@ public class Teacher {
     private String username;
     private String password;
     @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-    private Set<Student> students;
+    private List<Student> students;
 }

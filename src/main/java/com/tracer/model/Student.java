@@ -1,11 +1,17 @@
-package com.tracer.entity;
+package com.tracer.model;
 
 import jakarta.persistence.*;
+import lombok.*;
 
 import java.math.BigDecimal;
 
 @Entity
 @Table(name="students")
+@EqualsAndHashCode
+@ToString
+@Builder
+@Getter
+@Setter
 public class Student {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
