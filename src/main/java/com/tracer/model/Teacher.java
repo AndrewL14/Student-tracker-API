@@ -7,6 +7,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "teachers")
+@Data
 @EqualsAndHashCode
 @ToString
 @Builder
@@ -22,6 +23,6 @@ public class Teacher {
     @Column(unique = true)
     private String username;
     private String password;
-    @OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<Student> students;
 }
