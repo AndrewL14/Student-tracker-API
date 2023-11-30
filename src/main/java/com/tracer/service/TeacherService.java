@@ -105,8 +105,9 @@ public class TeacherService {
                         .filter(student -> student.getName().equals(request.getStudentName()))
                                 .findFirst();
         studentToDelete.ifPresent(teacher.getStudents()::remove);
-        teacherRepository.save(teacher);
-        studentToDelete.ifPresent(studentRepository::delete);
-
+        studentToDelete.ifPresent(student -> {
+            studentRepository.delete(student);
+            teacherRepository.save(teacher);
+        });
     }
 }
