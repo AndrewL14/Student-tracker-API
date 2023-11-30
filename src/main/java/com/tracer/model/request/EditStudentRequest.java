@@ -15,7 +15,7 @@ public class EditStudentRequest {
     private String teacherUsername;
     private String name;
     private Integer period;
-    private Optional<Integer> periodToChange;
-    private Optional<String> nameToChange;
-    private Optional<Double> gradeToChange;
+    private Optional<Integer> periodToChange = Optional.empty();
+    private Optional<String> nameToChange = Optional.empty();
+    private Optional<Double> gradeToChange = Optional.empty();
 }
