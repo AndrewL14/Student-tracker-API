@@ -10,7 +10,6 @@ import java.util.List;
 @Data
 @EqualsAndHashCode
 @ToString
-@Builder
 @Getter
 @Setter
 public class Teacher {
@@ -25,4 +24,13 @@ public class Teacher {
     private String password;
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
     private List<Student> students;
+
+    public Teacher() {
+    }
+
+    public Teacher(String username , String password , List<Student> students) {
+        this.username = username;
+        this.password = password;
+        this.students = students;
+    }
 }
