@@ -33,4 +33,4 @@ build/
 .vscode/
 
 ### Database ###
-.env.main.db
+application-prod.properties
