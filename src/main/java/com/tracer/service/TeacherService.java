@@ -8,6 +8,9 @@ import com.tracer.model.request.GetStudentRequest;
 import com.tracer.repository.StudentRepository;
 import com.tracer.repository.TeacherRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,7 +22,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
-public class TeacherService {
+public class TeacherService implements UserDetailsService {
     @Autowired
     private TeacherRepository teacherRepository;
     @Autowired
@@ -109,5 +112,18 @@ public class TeacherService {
             studentRepository.delete(student);
             teacherRepository.save(teacher);
         });
+    }
+
+    /**
+     *  Fetches a User with a given username if the user is not found throws
+     *  A UsernameNotFoundException.
+     * @param username the username identifying the user whose data is required.
+     * @return A UserDetails with a valid user
+     * @throws UsernameNotFoundException If user was not found.
+     */
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        Optional<Teacher> teacherOpt = teacherRepository.findByUsername(username);
+        return teacherOpt.orElseThrow(() -> new UsernameNotFoundException("Invalid Credentials"));
     }
 }
