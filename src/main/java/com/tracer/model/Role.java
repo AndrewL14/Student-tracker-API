@@ -4,19 +4,19 @@ import jakarta.persistence.*;
 import org.springframework.security.core.GrantedAuthority;
 
 @Entity
-@Table(name = "authorities")
-public class Authority implements GrantedAuthority {
+@Table(name = "roles")
+public class Role implements GrantedAuthority {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "authority_id")
+    @Column(name = "role_id")
     private Integer roleId;
     private String authority;
 
-    public Authority() {
+    public Role() {
         super();
     }
 
-    public Authority(String authority) {
+    public Role(String authority) {
         this.authority = authority;
     }
 
