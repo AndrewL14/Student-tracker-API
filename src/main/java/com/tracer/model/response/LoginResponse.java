@@ -1,16 +1,18 @@
 package com.tracer.model.response;
 
-import com.tracer.model.Teacher;
+import com.tracer.model.Student;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+
+import java.util.List;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoginResponse {
-    private Teacher teacher;
+    private List<Student> students;
     private String jwt;
 }
