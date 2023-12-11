@@ -8,6 +8,7 @@ import com.tracer.service.TeacherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -19,32 +20,36 @@ public class TeacherController {
     @Autowired
     private TeacherService service;
 
-    @GetMapping("/all{username}")
-    public ResponseEntity<List<Student>> getAllStudents(@RequestParam String username) {
+    @GetMapping("/all")
+    public ResponseEntity<List<Student>> getAllStudents(Authentication authentication) {
         return new ResponseEntity<List<Student>>(
-                service.getAllStudentsByTeacherUsername(username),
+                service.getAllStudentsByTeacherUsername(authentication.getName()),
                 HttpStatus.OK
         );
     }
-    @GetMapping("/unique")
-    public ResponseEntity<List<Student>> getStudentsByName(@RequestBody GetStudentRequest request) {
+    @GetMapping("/unique{studentName}")
+    public ResponseEntity<List<Student>> getStudentsByName(@RequestParam String studentName, Authentication authentication) {
         return new ResponseEntity<List<Student>>(
-                service.getStudentsByName(request.getTeacherUsername() , request.getStudentName()),
+                service.getStudentsByName(authentication.getName() , studentName),
                 HttpStatus.OK
         );
     }
     @PutMapping("/add")
-    public ResponseEntity<List<Student>> addStudent(@RequestBody AddStudentRequest request) {
-        return new ResponseEntity<List<Student>>(service.addStudent(request),
+    public ResponseEntity<List<Student>> addStudent(@RequestBody AddStudentRequest request,
+                                                    Authentication authentication) {
+        return new ResponseEntity<List<Student>>(service.addStudent(request, authentication.getName()),
                 HttpStatus.OK);
     }
     @PostMapping("/edit")
-    public ResponseEntity<List<Student>> editExistingStudent(@RequestBody EditStudentRequest request) {
-        return new ResponseEntity<List<Student>>(service.editExistingStudent(request),
+    public ResponseEntity<List<Student>> editExistingStudent(@RequestBody EditStudentRequest request,
+                                                             Authentication authentication) {
+        return new ResponseEntity<List<Student>>(service.editExistingStudent(request, authentication.getName()),
                 HttpStatus.OK);
     }
     @GetMapping("/delete")
-    public ResponseEntity<?> deleteExistingStudent(@RequestBody GetStudentRequest request) {
+    public ResponseEntity<?> deleteExistingStudent(@RequestBody GetStudentRequest request,
+                                                   Authentication authentication) {
+            service.deleteStudent(request, authentication.getName());
         return new ResponseEntity<>("", HttpStatus.OK);
     }
 }

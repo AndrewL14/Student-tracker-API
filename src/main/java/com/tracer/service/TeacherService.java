@@ -8,6 +8,9 @@ import com.tracer.model.request.GetStudentRequest;
 import com.tracer.repository.StudentRepository;
 import com.tracer.repository.TeacherRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,7 +22,7 @@ import java.util.stream.Collectors;
 
 @Service
 @Transactional
-public class TeacherService {
+public class TeacherService implements UserDetailsService {
     @Autowired
     private TeacherRepository teacherRepository;
     @Autowired
@@ -58,8 +61,8 @@ public class TeacherService {
      * @param request request body with all the information needed to create a student
      * @return An updated list of students
      */
-    public List<Student> addStudent(AddStudentRequest request) {
-        Teacher teacher = teacherRepository.findByUsername(request.getTeacherUsername())
+    public List<Student> addStudent(AddStudentRequest request, String teacherUsername) {
+        Teacher teacher = teacherRepository.findByUsername(teacherUsername)
                 .orElseThrow(NullPointerException::new);
         Student studentToAdd = new Student(request.getName() , request.getPeriod(), request.getGrade());
         List<Student> students = teacher.getStudents();
@@ -75,8 +78,8 @@ public class TeacherService {
      * @param request request body with all information needed to handle the edit
      * @return an updated List of students
      */
-    public List<Student> editExistingStudent(EditStudentRequest request) {
-        Teacher teacher = teacherRepository.findByUsername(request.getTeacherUsername())
+    public List<Student> editExistingStudent(EditStudentRequest request, String teacherUsername) {
+        Teacher teacher = teacherRepository.findByUsername(teacherUsername)
                 .orElseThrow(() -> new IllegalArgumentException("Teacher not found"));
 
         List<Student> updatedStudents = teacher.getStudents().stream()
@@ -98,8 +101,8 @@ public class TeacherService {
      * Deletes a student if existed.
      * @param request request body containing the teacher username and student full name
      */
-    public void deleteStudent(GetStudentRequest request) {
-        Teacher teacher = teacherRepository.findByUsername(request.getTeacherUsername())
+    public void deleteStudent(GetStudentRequest request, String teacherUsername) {
+        Teacher teacher = teacherRepository.findByUsername(teacherUsername)
                 .orElseThrow(NullPointerException::new);
         Optional<Student> studentToDelete = teacher.getStudents().stream()
                         .filter(student -> student.getName().equals(request.getStudentName()))
@@ -109,5 +112,22 @@ public class TeacherService {
             studentRepository.delete(student);
             teacherRepository.save(teacher);
         });
+    }
+
+    /**
+     *  Fetches a User with a given username if the user is not found throws
+     *  A UsernameNotFoundException.
+     * @param username the username identifying the user whose data is required.
+     * @return A UserDetails with a valid user
+     * @throws UsernameNotFoundException If user was not found.
+     */
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        Optional<Teacher> teacherOpt = teacherRepository.findByUsername(username);
+        return teacherOpt.orElseThrow(() -> new UsernameNotFoundException("Invalid Credentials"));
+    }
+
+    public UserDetails saveNewTeacher(Teacher teacher) {
+        return teacherRepository.save(teacher);
     }
 }
