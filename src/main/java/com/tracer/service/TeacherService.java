@@ -61,8 +61,8 @@ public class TeacherService implements UserDetailsService {
      * @param request request body with all the information needed to create a student
      * @return An updated list of students
      */
-    public List<Student> addStudent(AddStudentRequest request) {
-        Teacher teacher = teacherRepository.findByUsername(request.getTeacherUsername())
+    public List<Student> addStudent(AddStudentRequest request, String teacherUsername) {
+        Teacher teacher = teacherRepository.findByUsername(teacherUsername)
                 .orElseThrow(NullPointerException::new);
         Student studentToAdd = new Student(request.getName() , request.getPeriod(), request.getGrade());
         List<Student> students = teacher.getStudents();
@@ -78,8 +78,8 @@ public class TeacherService implements UserDetailsService {
      * @param request request body with all information needed to handle the edit
      * @return an updated List of students
      */
-    public List<Student> editExistingStudent(EditStudentRequest request) {
-        Teacher teacher = teacherRepository.findByUsername(request.getTeacherUsername())
+    public List<Student> editExistingStudent(EditStudentRequest request, String teacherUsername) {
+        Teacher teacher = teacherRepository.findByUsername(teacherUsername)
                 .orElseThrow(() -> new IllegalArgumentException("Teacher not found"));
 
         List<Student> updatedStudents = teacher.getStudents().stream()
@@ -101,8 +101,8 @@ public class TeacherService implements UserDetailsService {
      * Deletes a student if existed.
      * @param request request body containing the teacher username and student full name
      */
-    public void deleteStudent(GetStudentRequest request) {
-        Teacher teacher = teacherRepository.findByUsername(request.getTeacherUsername())
+    public void deleteStudent(GetStudentRequest request, String teacherUsername) {
+        Teacher teacher = teacherRepository.findByUsername(teacherUsername)
                 .orElseThrow(NullPointerException::new);
         Optional<Student> studentToDelete = teacher.getStudents().stream()
                         .filter(student -> student.getName().equals(request.getStudentName()))
@@ -125,5 +125,9 @@ public class TeacherService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<Teacher> teacherOpt = teacherRepository.findByUsername(username);
         return teacherOpt.orElseThrow(() -> new UsernameNotFoundException("Invalid Credentials"));
+    }
+
+    public UserDetails saveNewTeacher(Teacher teacher) {
+        return teacherRepository.save(teacher);
     }
 }
