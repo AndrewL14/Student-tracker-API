@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
-import org.mockito.internal.matchers.Any;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -118,12 +117,12 @@ public class TeacherServiceTest {
     @Test
     public void addStudent_validRequest_updatedListOfStudents() {
         // GIVEN
-        AddStudentRequest request = new AddStudentRequest("james","John Doe", 1,BigDecimal.ONE);
+        AddStudentRequest request = new AddStudentRequest("John Doe", 1,BigDecimal.ONE);
        Mockito.when(teacherRepository.findByUsername(testTeacher.getUsername()))
                .thenReturn(Optional.of(testTeacher));
 
         // Act
-        List<Student> response = service.addStudent(request);
+        List<Student> response = service.addStudent(request, "james");
 
         // Assert
         assertEquals(1, response.size());
@@ -134,13 +133,12 @@ public class TeacherServiceTest {
     @Test
     public void addStudent_InvalidRequest_throwsNullPointer() {
         // GIVEN
-        AddStudentRequest request = new AddStudentRequest("invalidTeacher",
-                "joe", 2, BigDecimal.ONE);
+        AddStudentRequest request = new AddStudentRequest("joe", 2, BigDecimal.ONE);
 
         // WHEN
         // THEN
         assertThrows(NullPointerException.class, () -> {
-            service.addStudent(request);
+            service.addStudent(request,"invalidTeacher");
         });
     }
 
@@ -154,15 +152,14 @@ public class TeacherServiceTest {
         EditStudentRequest request = new EditStudentRequest();
         request.setName("jhon");
         request.setPeriod(2);
-        request.setTeacherUsername(testTeacher.getUsername());
         request.setGradeToChange(Optional.of(10.0));
         request.setNameToChange(Optional.of("kenny"));
         request.setPeriodToChange(Optional.of(1));
 
         // WHEN
-        Mockito.when(teacherRepository.findByUsername(request.getTeacherUsername()))
+        Mockito.when(teacherRepository.findByUsername(Mockito.any()))
                 .thenReturn(Optional.ofNullable(testTeacher));
-        List<Student> response = service.editExistingStudent(request);
+        List<Student> response = service.editExistingStudent(request, "james");
 
         // THEN
         assertNotNull(response);
@@ -183,7 +180,7 @@ public class TeacherServiceTest {
         // WHEN
         // THEN
         assertThrows(IllegalArgumentException.class, () -> {
-            service.editExistingStudent(invalidRequest);
+            service.editExistingStudent(invalidRequest, "InvalidTeacher");
         });
     }
 
@@ -197,13 +194,12 @@ public class TeacherServiceTest {
         EditStudentRequest request = new EditStudentRequest();
         request.setName("jhon");
         request.setPeriod(2);
-        request.setTeacherUsername(testTeacher.getUsername());
         request.setGradeToChange(Optional.of(10.0));
 
         // WHEN
-        Mockito.when(teacherRepository.findByUsername(request.getTeacherUsername()))
+        Mockito.when(teacherRepository.findByUsername(testTeacher.getUsername()))
                 .thenReturn(Optional.ofNullable(testTeacher));
-        List<Student> response = service.editExistingStudent(request);
+        List<Student> response = service.editExistingStudent(request, testTeacher.getUsername());
 
         // THEN
         assertNotNull(response);
@@ -227,7 +223,7 @@ public class TeacherServiceTest {
         // WHEN
         Mockito.when(teacherRepository.findByUsername(testTeacher.getUsername()))
                 .thenReturn(Optional.ofNullable(testTeacher));
-        service.deleteStudent(request);
+        service.deleteStudent(request, testTeacher.getUsername());
 
         Mockito.verify(teacherRepository, Mockito.times(1)).save(testTeacher);
         Mockito.verify(studentRepository, Mockito.times(1)).delete(testStudent);
@@ -242,7 +238,7 @@ public class TeacherServiceTest {
         // WHEN
         // THEN
         assertThrows(NullPointerException.class, () -> {
-            service.deleteStudent(invalidRequest);
+            service.deleteStudent(invalidRequest, testTeacher.getUsername());
         });
     }
 
@@ -257,7 +253,7 @@ public class TeacherServiceTest {
         // THEN
         Mockito.when(teacherRepository.findByUsername(testTeacher.getUsername()))
                 .thenReturn(Optional.ofNullable(testTeacher));
-        service.deleteStudent(request);
+        service.deleteStudent(request, testTeacher.getUsername());
 
         // THEN
         assertEquals(1, testTeacher.getStudents().size());

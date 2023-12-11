@@ -24,6 +24,8 @@ import static org.mockito.MockitoAnnotations.*;
 
 public class AuthenticationServiceTest {
     @Mock
+    private TeacherService teacherService;
+    @Mock
     private TeacherRepository teacherRepository;
     @Mock
     private AuthorityRepository authorityRepository;
@@ -52,22 +54,21 @@ public class AuthenticationServiceTest {
         // GIVEN
         String username = "james";
         String password = "password";
+        String mockToken = "mockToken";
         String encodedPassword = passwordEncoder.encode(password);
         testTeacher.setStudents(new ArrayList<>());
         testTeacher.setUsername(username);
         testTeacher.setPassword(encodedPassword);
         // WHEN
+        when(tokenService.generateJwt(any())).thenReturn(mockToken);
         when(passwordEncoder.encode(password)).thenReturn(encodedPassword);
         when(authorityRepository.findByAuthority("TEACHER")).thenReturn(Optional.of(role));
-        when(teacherRepository.save(any())).thenReturn(testTeacher);
-        Teacher response = authenticationService.registerUser(username, password);
+        when(teacherService.saveNewTeacher(any())).thenReturn(testTeacher);
+        LoginResponse response = authenticationService.registerUser(username, password);
 
         // THEN
         assertNotNull(response, "expected response to NOT be null");
-        assertEquals(encodedPassword, response.getPassword(),
-                "expected password to be encoded but got: " + response.getPassword());
-        assertEquals(username, response.getUsername(),
-                "expected username to be james but got: " + response.getUsername());
+        assertNotNull(response.getJwt(), "expected there to be a JWT");
     }
 
     @Test
@@ -76,22 +77,23 @@ public class AuthenticationServiceTest {
         String username = "james";
         String password = "Password";
         String mockToken = "mockToken";
+        testTeacher.setStudents(new ArrayList<>());
 
         // WHEN
         when(tokenService.generateJwt(any())).thenReturn(mockToken);
-        when(teacherRepository.findByUsername(username)).thenReturn(Optional.of(testTeacher));
+        when(teacherService.loadUserByUsername(username)).thenReturn(testTeacher);
         LoginResponse result = authenticationService.loginUser(username, password);
 
         // THEN
         assertNotNull(result);
-        assertEquals(testTeacher, result.getTeacher());
+        assertEquals(0, result.getStudents().size());
         assertEquals(mockToken, result.getJwt());
         verify(authenticationManager).authenticate(argThat(auth ->
                 auth instanceof UsernamePasswordAuthenticationToken
                         && ((UsernamePasswordAuthenticationToken) auth).getPrincipal().equals(username)
                         && ((UsernamePasswordAuthenticationToken) auth).getCredentials().equals(password)));
         verify(tokenService).generateJwt(any());
-        verify(teacherRepository).findByUsername(username);
+        verify(teacherService).loadUserByUsername(username);
     }
 
     @Test
@@ -108,6 +110,6 @@ public class AuthenticationServiceTest {
             LoginResponse result = authenticationService.loginUser(username, password);
         });
         verify(tokenService).generateJwt(any());
-        verify(teacherRepository).findByUsername(username);
+        verify(teacherService).loadUserByUsername(username);
     }
 }
