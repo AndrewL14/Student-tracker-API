@@ -1,10 +1,10 @@
 package com.tracer.service;
 
 import com.tracer.model.Role;
+import com.tracer.model.Student;
 import com.tracer.model.Teacher;
 import com.tracer.model.response.LoginResponse;
 import com.tracer.repository.AuthorityRepository;
-import com.tracer.repository.TeacherRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -15,14 +15,14 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 @Service
 @Transactional
 public class AuthenticationService {
     @Autowired
-    private TeacherRepository teacherRepository;
-
+    private TeacherService teacherService;
     @Autowired
     private AuthorityRepository roleRepository;
 
@@ -35,7 +35,7 @@ public class AuthenticationService {
     @Autowired
     private TokenService tokenService;
 
-    public Teacher registerUser(String username, String password){
+    public LoginResponse registerUser(String username, String password){
 
         String encodedPassword = passwordEncoder.encode(password);
         Role userRole = roleRepository.findByAuthority("TEACHER").get();
@@ -44,8 +44,13 @@ public class AuthenticationService {
 
         authorities.add(userRole);
 
-        return teacherRepository.save(new Teacher(username, encodedPassword, new ArrayList<>(),
+        Teacher teacher = (Teacher) teacherService.saveNewTeacher(new Teacher(username, encodedPassword, new ArrayList<>(),
                 authorities));
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(username, password)
+        );
+        String token = tokenService.generateJwt(authentication);
+        return new LoginResponse(teacher.getStudents(), token);
     }
 
     public LoginResponse loginUser(String username, String password){
@@ -54,10 +59,9 @@ public class AuthenticationService {
                    new UsernamePasswordAuthenticationToken(username, password)
         );
         String token = tokenService.generateJwt(authentication);
-
-        return new LoginResponse(teacherRepository.findByUsername(username)
-                .orElseThrow(NullPointerException::new),
-                token);
+        Teacher teacher = (Teacher) teacherService.loadUserByUsername(username);
+        List<Student> students = teacher.getStudents();
+        return  new LoginResponse(students, token);
 
     }
 }
