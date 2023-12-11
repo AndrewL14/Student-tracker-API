@@ -12,7 +12,6 @@ import java.math.BigDecimal;
 @NoArgsConstructor
 @AllArgsConstructor
 public class AddStudentRequest {
-    private String teacherUsername;
     private String name;
     private Integer period;
     private BigDecimal grade;

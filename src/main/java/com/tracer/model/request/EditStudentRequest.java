@@ -12,7 +12,6 @@ import java.util.Optional;
 @Getter
 @Setter
 public class EditStudentRequest {
-    private String teacherUsername;
     private String name;
     private Integer period;
     private Optional<Integer> periodToChange = Optional.empty();
