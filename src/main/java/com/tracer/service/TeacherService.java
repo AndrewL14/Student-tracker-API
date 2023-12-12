@@ -86,7 +86,9 @@ public class TeacherService implements UserDetailsService {
                 .filter(student -> student.getName().equals(request.getName()) && student.getPeriod().equals(request.getPeriod()))
                 .peek(student -> {
                     request.getGradeToChange().ifPresent(grade -> student.setGrade(BigDecimal.valueOf(grade)));
-                    request.getNameToChange().ifPresent(student::setName);
+                    if (!request.getNameToChange().isEmpty()) {
+                        student.setName(request.getNameToChange());
+                    }
                     request.getPeriodToChange().ifPresent(student::setPeriod);
                     studentRepository.save(student);
                 })
