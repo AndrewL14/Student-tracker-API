@@ -46,7 +46,7 @@ public class TeacherController {
         return new ResponseEntity<List<Student>>(service.editExistingStudent(request, authentication.getName()),
                 HttpStatus.OK);
     }
-    @GetMapping("/delete")
+    @DeleteMapping("/delete")
     public ResponseEntity<?> deleteExistingStudent(@RequestBody GetStudentRequest request,
                                                    Authentication authentication) {
             service.deleteStudent(request, authentication.getName());
