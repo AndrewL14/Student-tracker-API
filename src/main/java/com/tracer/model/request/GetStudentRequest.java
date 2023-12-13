@@ -10,6 +10,5 @@ import lombok.Setter;
 @NoArgsConstructor
 @AllArgsConstructor
 public class GetStudentRequest {
-    private String teacherUsername;
     private String studentName;
 }
