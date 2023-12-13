@@ -4,7 +4,10 @@ import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 
 public class KeyGeneratorUtility {
-
+    /**
+     * Creates a new RSA key pair by generating a private and public key.
+     * @return RSA keyPair.
+     */
     public static KeyPair generateRsaKey(){
 
         KeyPair keyPair;

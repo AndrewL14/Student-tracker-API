@@ -35,6 +35,12 @@ public class AuthenticationService {
     @Autowired
     private TokenService tokenService;
 
+    /**
+     * Creates and saves a new teacher object using the provided username and password.
+     * @param username A unique combination of characters to be used.
+     * @param password A string of characters to be used.
+     * @return A loginResponse containing a new List of students, and a valid JWT.
+     */
     public LoginResponse registerUser(String username, String password){
 
         String encodedPassword = passwordEncoder.encode(password);
@@ -52,7 +58,13 @@ public class AuthenticationService {
         String token = tokenService.generateJwt(authentication);
         return new LoginResponse(teacher.getStudents(), token);
     }
-
+    /**
+     * Checks if a teacher object containing matching username and password, then
+     * generates a new JWT, finally returns a loginResponse.
+     * @param username A unique combination of characters to be used.
+     * @param password A string of characters to be used.
+     * @return A loginResponse containing a new List of students, and a valid JWT.
+     */
     public LoginResponse loginUser(String username, String password){
 
         Authentication authentication = authenticationManager.authenticate(

@@ -21,6 +21,12 @@ public class TokenService {
     @Autowired
     private JwtDecoder jwtDecoder;
 
+    /**
+     * Generates a new authorized JWT for users to use when calling restricted controller
+     * methods.
+     * @param auth the username and password to be used.
+     * @return A brand-new JWT
+     */
     public String generateJwt(Authentication auth){
         Instant now = Instant.now();
 
