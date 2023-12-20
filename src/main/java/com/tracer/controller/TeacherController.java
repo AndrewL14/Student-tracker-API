@@ -46,10 +46,10 @@ public class TeacherController {
         return new ResponseEntity<List<Student>>(service.editExistingStudent(request, authentication.getName()),
                 HttpStatus.OK);
     }
-    @DeleteMapping("/delete")
-    public ResponseEntity<?> deleteExistingStudent(@RequestBody GetStudentRequest request,
+    @DeleteMapping("/delete{studentId}")
+    public ResponseEntity<?> deleteExistingStudent(@RequestParam Long studentId,
                                                    Authentication authentication) {
-            service.deleteStudent(request, authentication.getName());
+            service.deleteStudent(studentId, authentication.getName());
         return new ResponseEntity<>("", HttpStatus.OK);
     }
 }

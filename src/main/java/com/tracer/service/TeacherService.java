@@ -83,7 +83,7 @@ public class TeacherService implements UserDetailsService {
                 .orElseThrow(() -> new IllegalArgumentException("Teacher not found"));
 
         List<Student> updatedStudents = teacher.getStudents().stream()
-                .filter(student -> student.getName().equals(request.getName()) && student.getPeriod().equals(request.getPeriod()))
+                .filter(student -> student.getStudentId().equals(request.getStudentId()))
                 .peek(student -> {
                     request.getGradeToChange().ifPresent(grade -> student.setGrade(BigDecimal.valueOf(grade)));
                     if (!request.getNameToChange().isEmpty()) {
@@ -100,14 +100,15 @@ public class TeacherService implements UserDetailsService {
     }
 
     /**
-     * Deletes a student if existed.
-     * @param request request body containing the teacher username and student full name
+     * Deletes student using a teacher username and student Id
+     * @param studentId unique id given to student objects
+     * @param teacherUsername unique username
      */
-    public void deleteStudent(GetStudentRequest request, String teacherUsername) {
+    public void deleteStudent(Long studentId, String teacherUsername) {
         Teacher teacher = teacherRepository.findByUsername(teacherUsername)
                 .orElseThrow(NullPointerException::new);
         Optional<Student> studentToDelete = teacher.getStudents().stream()
-                        .filter(student -> student.getName().equals(request.getStudentName()))
+                        .filter(student -> student.getStudentId().equals(studentId))
                                 .findFirst();
         studentToDelete.ifPresent(teacher.getStudents()::remove);
         studentToDelete.ifPresent(student -> {
