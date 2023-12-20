@@ -78,13 +78,13 @@ request_put_add_student:
   headers:
     Authorization: "Bearer YOUR_ACCESS_TOKEN"
   body:
-    studentName: "John Doe"
+    name: "John Doe"
     period: 2
     grade: 75
 ```
 ```json
 {
-  "studentName": "John Doe",
+  "name": "John Doe",
   "period": 2,
   "grade": 75
 }
@@ -98,19 +98,17 @@ request_post_edit_student:
   headers:
     Authorization: "Bearer YOUR_ACCESS_TOKEN"
   body:
-    studentName: "Jhon"
-    period: 1
+    studentId: 1
     periodToChange: 2
     nameToChange: colin
     gradeToChange: 75
 ```
 ```json
 {
-  "studentName": "Jhon",
-  "period": 1,
-  "periodToChange": 2,
-  "nameToChange": "colin",
-  "gradeToChange": 75.6
+   "studentId": 1,
+   "periodToChange": 2,
+   "nameToChange": "colin",
+   "gradeToChange": 75.6
 }
 ```
 ### DELETE student
