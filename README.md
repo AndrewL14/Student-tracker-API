@@ -149,7 +149,7 @@ spring.jpa.hibernate.ddl-auto=create-drop
 ## Meta
 
 A. Lam – andrew.lam965@Gmail.com
-
+Github profile
 [https://github.com/AndrewL14/](https://github.com/AndrewL14/)
 
 ## Contributing
