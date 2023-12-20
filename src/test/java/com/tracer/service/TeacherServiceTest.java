@@ -145,15 +145,16 @@ public class TeacherServiceTest {
     @Test
     public void editExistingStudent_validRequest_ListOfStudents() {
         // GIVEN
+        Long studentId = 1L;
         List<Student> students = new ArrayList<>();
+        testStudent.setStudentId(studentId);
         students.add(testStudent);
         testTeacher.setStudents(students);
 
         EditStudentRequest request = new EditStudentRequest();
-        request.setName("jhon");
-        request.setPeriod(2);
+        request.setStudentId(studentId);
         request.setGradeToChange(Optional.of(10.0));
-        request.setNameToChange(Optional.of("kenny"));
+        request.setNameToChange("kenny");
         request.setPeriodToChange(Optional.of(1));
 
         // WHEN
@@ -164,6 +165,7 @@ public class TeacherServiceTest {
         // THEN
         assertNotNull(response);
         Student updatedStudent = response.get(0);
+        assertEquals(1L, updatedStudent.getStudentId());
         assertEquals(1, response.size());
         assertEquals("kenny", updatedStudent.getName());
         assertEquals(BigDecimal.valueOf(10.0), updatedStudent.getGrade());
@@ -187,13 +189,14 @@ public class TeacherServiceTest {
     @Test
     public void editExistingStudent_IncompleteRequest_returnsUpdatedList() {
         // GIVEN
+        Long studentId = 1L;
         List<Student> students = new ArrayList<>();
+        testStudent.setStudentId(studentId);
         students.add(testStudent);
         testTeacher.setStudents(students);
 
         EditStudentRequest request = new EditStudentRequest();
-        request.setName("jhon");
-        request.setPeriod(2);
+        request.setStudentId(studentId);
         request.setGradeToChange(Optional.of(10.0));
 
         // WHEN
@@ -204,6 +207,7 @@ public class TeacherServiceTest {
         // THEN
         assertNotNull(response);
         Student updatedStudent = response.get(0);
+        assertEquals(1L, updatedStudent.getStudentId());
         assertEquals(1, response.size());
         assertEquals("jhon", updatedStudent.getName(), "expected name to remain the same");
         assertEquals(BigDecimal.valueOf(10.0), updatedStudent.getGrade());
@@ -215,15 +219,17 @@ public class TeacherServiceTest {
     @Test
     public void deleteStudent_validRequest() {
         // GIVEN
+        Long studentId = 1L;
         List<Student> students = new ArrayList<>();
+        testStudent.setStudentId(studentId);
         students.add(testStudent);
         testTeacher.setStudents(students);
-        GetStudentRequest request = new GetStudentRequest(testTeacher.getUsername() , testStudent.getName());
+
 
         // WHEN
         Mockito.when(teacherRepository.findByUsername(testTeacher.getUsername()))
                 .thenReturn(Optional.ofNullable(testTeacher));
-        service.deleteStudent(request, testTeacher.getUsername());
+        service.deleteStudent(studentId, testTeacher.getUsername());
 
         Mockito.verify(teacherRepository, Mockito.times(1)).save(testTeacher);
         Mockito.verify(studentRepository, Mockito.times(1)).delete(testStudent);
@@ -233,32 +239,10 @@ public class TeacherServiceTest {
     @Test
     public void deleteStudent_InvalidRequest_throwsNullPointer() {
         // GIVEN
-        GetStudentRequest invalidRequest = new GetStudentRequest("invalidTeacher", "InvalidStudent");
-
         // WHEN
         // THEN
         assertThrows(NullPointerException.class, () -> {
-            service.deleteStudent(invalidRequest, testTeacher.getUsername());
+            service.deleteStudent(3L, testTeacher.getUsername());
         });
     }
-
-    @Test
-    public void deleteStudent_IncompleteRequest() {
-        // GIVEN
-        List<Student> students = new ArrayList<>();
-        students.add(testStudent);
-        testTeacher.setStudents(students);
-        GetStudentRequest request = new GetStudentRequest(testTeacher.getUsername() , "InvalidStudent");
-
-        // THEN
-        Mockito.when(teacherRepository.findByUsername(testTeacher.getUsername()))
-                .thenReturn(Optional.ofNullable(testTeacher));
-        service.deleteStudent(request, testTeacher.getUsername());
-
-        // THEN
-        assertEquals(1, testTeacher.getStudents().size());
-        Mockito.verify(teacherRepository, Mockito.times(0)).save(testTeacher);
-        Mockito.verify(studentRepository, Mockito.times(0)).delete(testStudent);
-    }
-
 }
