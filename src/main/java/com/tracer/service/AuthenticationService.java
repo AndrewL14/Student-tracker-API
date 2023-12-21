@@ -56,7 +56,7 @@ public class AuthenticationService {
                 new UsernamePasswordAuthenticationToken(username, password)
         );
         String token = tokenService.generateJwt(authentication);
-        return new LoginResponse(teacher.getStudents(), token);
+        return new LoginResponse(teacher.getUsername(), token);
     }
     /**
      * Checks if a teacher object containing matching username and password, then
@@ -73,7 +73,7 @@ public class AuthenticationService {
         String token = tokenService.generateJwt(authentication);
         Teacher teacher = (Teacher) teacherService.loadUserByUsername(username);
         List<Student> students = teacher.getStudents();
-        return  new LoginResponse(students, token);
+        return  new LoginResponse(teacher.getUsername(), token);
 
     }
 }

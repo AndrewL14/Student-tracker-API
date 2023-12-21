@@ -68,6 +68,7 @@ public class AuthenticationServiceTest {
 
         // THEN
         assertNotNull(response, "expected response to NOT be null");
+        assertEquals(response.getTeacherUsername(), testTeacher.getUsername(), String.format("expected username to be: %s but got: %s", testTeacher.getUsername(), response.getTeacherUsername()));
         assertNotNull(response.getJwt(), "expected there to be a JWT");
     }
 
@@ -82,12 +83,12 @@ public class AuthenticationServiceTest {
         // WHEN
         when(tokenService.generateJwt(any())).thenReturn(mockToken);
         when(teacherService.loadUserByUsername(username)).thenReturn(testTeacher);
-        LoginResponse result = authenticationService.loginUser(username, password);
+        LoginResponse response = authenticationService.loginUser(username, password);
 
         // THEN
-        assertNotNull(result);
-        assertEquals(0, result.getStudents().size());
-        assertEquals(mockToken, result.getJwt());
+        assertNotNull(response);
+        assertEquals(response.getTeacherUsername(), testTeacher.getUsername(), String.format("expected username to be: %s but got: %s", testTeacher.getUsername(), response.getTeacherUsername()));
+        assertEquals(mockToken, response.getJwt());
         verify(authenticationManager).authenticate(argThat(auth ->
                 auth instanceof UsernamePasswordAuthenticationToken
                         && ((UsernamePasswordAuthenticationToken) auth).getPrincipal().equals(username)

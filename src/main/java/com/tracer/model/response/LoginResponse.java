@@ -13,6 +13,6 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class LoginResponse {
-    private List<Student> students;
+    private String teacherUsername;
     private String jwt;
 }
