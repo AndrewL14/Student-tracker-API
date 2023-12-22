@@ -30,32 +30,9 @@ public class TokenService {
                 .issuedAt(now)
                 .subject(auth.getName())
                 .claim("roles", scope)
-                .expiresAt(now.plusSeconds(18000))
+                .expiresAt(now.plusMillis(18000000))
                 .build();
 
         return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }
-
-    public boolean validateJwt(String token, String expectedUsername) {
-        try {
-            Jwt claim = jwtDecoder.decode(token);
-            String tokenUsername = claim.getSubject();
-
-            return isTokenExpired(token) && tokenUsername.equals(expectedUsername);
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    private boolean isTokenExpired(String token) {
-        try {
-            Jwt claim = jwtDecoder.decode(token);
-            Instant expirationTime = claim.getExpiresAt();
-            assert expirationTime != null;
-            return !expirationTime.isBefore(Instant.now());
-        } catch (Exception e){
-            return false;
-        }
-    }
-
 }

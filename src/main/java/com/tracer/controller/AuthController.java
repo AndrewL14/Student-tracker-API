@@ -29,14 +29,4 @@ public class AuthController {
           authService.loginUser(request.getUsername(), request.getPassword()), HttpStatus.OK
         );
     }
-
-    @GetMapping("/validate")
-    public ResponseEntity<String> validateToken(@RequestBody ValidateTokenRequest request) {
-        if (authService.validateToken(request.getJwt(), request.getUsername())) {
-            return ResponseEntity.ok("Valid Token");
-        } else {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body("Invalid or expired Token");
-        }
-    }
 }
