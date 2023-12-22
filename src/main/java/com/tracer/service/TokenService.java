@@ -3,10 +3,7 @@ package com.tracer.service;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.oauth2.jwt.JwtClaimsSet;
-import org.springframework.security.oauth2.jwt.JwtDecoder;
-import org.springframework.security.oauth2.jwt.JwtEncoder;
-import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
+import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -21,12 +18,6 @@ public class TokenService {
     @Autowired
     private JwtDecoder jwtDecoder;
 
-    /**
-     * Generates a new authorized JWT for users to use when calling restricted controller
-     * methods.
-     * @param auth the username and password to be used.
-     * @return A brand-new JWT
-     */
     public String generateJwt(Authentication auth){
         Instant now = Instant.now();
 
@@ -39,9 +30,32 @@ public class TokenService {
                 .issuedAt(now)
                 .subject(auth.getName())
                 .claim("roles", scope)
+                .expiresAt(now.plusSeconds(18000))
                 .build();
 
         return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+    }
+
+    public boolean validateJwt(String token, String expectedUsername) {
+        try {
+            Jwt claim = jwtDecoder.decode(token);
+            String tokenUsername = claim.getSubject();
+
+            return isTokenExpired(token) && tokenUsername.equals(expectedUsername);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean isTokenExpired(String token) {
+        try {
+            Jwt claim = jwtDecoder.decode(token);
+            Instant expirationTime = claim.getExpiresAt();
+            assert expirationTime != null;
+            return !expirationTime.isBefore(Instant.now());
+        } catch (Exception e){
+            return false;
+        }
     }
 
 }
