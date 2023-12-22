@@ -2,6 +2,7 @@ package com.tracer.controller;
 
 import com.tracer.model.request.LoginRequest;
 import com.tracer.model.request.RegistrationRequest;
+import com.tracer.model.request.ValidateTokenRequest;
 import com.tracer.model.response.LoginResponse;
 import com.tracer.service.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,5 +28,15 @@ public class AuthController {
         return new ResponseEntity<LoginResponse>(
           authService.loginUser(request.getUsername(), request.getPassword()), HttpStatus.OK
         );
+    }
+
+    @GetMapping("/validate")
+    public ResponseEntity<String> validateToken(@RequestBody ValidateTokenRequest request) {
+        if (authService.validateToken(request.getJwt(), request.getUsername())) {
+            return ResponseEntity.ok("Valid Token");
+        } else {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body("Invalid or expired Token");
+        }
     }
 }

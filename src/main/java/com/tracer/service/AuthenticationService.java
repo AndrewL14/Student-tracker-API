@@ -74,6 +74,9 @@ public class AuthenticationService {
         Teacher teacher = (Teacher) teacherService.loadUserByUsername(username);
         List<Student> students = teacher.getStudents();
         return  new LoginResponse(teacher.getUsername(), token);
+    }
 
+    public boolean validateToken(String token, String expectedUsername) {
+        return tokenService.validateJwt(token, expectedUsername);
     }
 }
