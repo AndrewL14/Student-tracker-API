@@ -83,14 +83,15 @@ public class TeacherService implements UserDetailsService {
                 .orElseThrow(() -> new IllegalArgumentException("Teacher not found"));
 
         List<Student> updatedStudents = teacher.getStudents().stream()
-                .filter(student -> student.getStudentId().equals(request.getStudentId()))
                 .peek(student -> {
-                    request.getGradeToChange().ifPresent(grade -> student.setGrade(BigDecimal.valueOf(grade)));
-                    if (!request.getNameToChange().isEmpty()) {
-                        student.setName(request.getNameToChange());
+                    if (student.getStudentId().equals(request.getStudentId())) {
+                        request.getGradeToChange().ifPresent(grade -> student.setGrade(BigDecimal.valueOf(grade)));
+                        if (!request.getNameToChange().isEmpty()) {
+                            student.setName(request.getNameToChange());
+                        }
+                        request.getPeriodToChange().ifPresent(student::setPeriod);
+                        studentRepository.save(student);
                     }
-                    request.getPeriodToChange().ifPresent(student::setPeriod);
-                    studentRepository.save(student);
                 })
                 .collect(Collectors.toList());
 
