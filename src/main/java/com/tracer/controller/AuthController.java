@@ -2,7 +2,6 @@ package com.tracer.controller;
 
 import com.tracer.model.request.LoginRequest;
 import com.tracer.model.request.RegistrationRequest;
-import com.tracer.model.request.ValidateTokenRequest;
 import com.tracer.model.response.LoginResponse;
 import com.tracer.service.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
