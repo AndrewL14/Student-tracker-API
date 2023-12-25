@@ -26,15 +26,15 @@ JWT, RSA, H2, AWS RDS, And PostgreSQL.
 - Postman for testing 
 
 
-To Install the application simply fork the repo and clone it to your local machine.
+To Install the application fork the repo and clone it to your local machine.
 
 ### Disclaimer
-This Web Application is the frontend if you want to run the fullstack application go to 
-[Student-tracker-UI](https://github.com/AndrewL14/Student-tracker-UI) 
+This application is a 2 part repo, if you wish to run in full-stack, visit
+[Student-tracker-UI](https://github.com/AndrewL14/Student-tracker-UI)  and clone the repo, making sure to run both applications
 
 Currently, the UI is incomplete, only the login and register pages have been implemented.
 
-If you wish to deploy this project for you self, create a application-prod.properties file and 
+If you wish to deploy this project for your self, create an application-prod.properties file and 
 Configure accordingly
 
 ## Sample request
