@@ -32,7 +32,11 @@ To Install the application fork the repo and clone it to your local machine.
 This application is a 2 part repo, if you wish to run in full-stack, visit
 [Student-tracker-UI](https://github.com/AndrewL14/Student-tracker-UI)  and clone the repo, making sure to run both applications
 
-Currently, the UI is incomplete, only the login and register pages have been implemented.
+Currently, the UI has not been styled but the corresponding login, register, and dashboard pages
+have all been implemented. 
+
+Note: If running in dev mode the data will not be stored across runtimes as the project uses an H2 database
+Configuration for testing and dev work. During a future update this project will be deployed using AWS and Render.
 
 If you wish to deploy this project for your self, create an application-prod.properties file and 
 Configure accordingly
@@ -56,6 +60,8 @@ curl -X POST -H "Content-Type: application/json" -d '{"username": "james", "pass
 ```
 
 All other request are in postman. In the Auth tab select `Bearer Token` and put your JWT in.
+request files are formatted in `.yaml` to show what is needed, for request requiring a body, a
+corresponding `.json` format has been provided for quick copy and paste.
 
 Here is all the necessary information needed to carry out request in postman:
 ### GET all students
