@@ -1,7 +1,9 @@
 @startuml
 
-package com.tracer.model {
-    package request {
+!theme mars
+
+package com.tracer.model <<Frame>>{
+    package request <<Frame>>{
         class AddStudentRequest {
             +name: String
             +period: Integer
@@ -45,7 +47,7 @@ package com.tracer.model {
         }
     }
 
-    package response {
+    package response <<Frame>>{
         class LoginResponse {
             +teacherUsername: String
             +jwt: String
@@ -99,7 +101,7 @@ Teacher --|> UserDetails
 Teacher --|> Role
 Teacher --|> Student
 
-package com.tracer.service {
+package com.tracer.service <<Service>>{
     class AuthenticationService {
         +teacherService: TeacherService
         +roleRepository: AuthorityRepository
@@ -132,7 +134,7 @@ package com.tracer.service {
     }
 }
 
-package com.tracer.repository {
+package com.tracer.repository <<Database>>{
     class StudentRepository {
         --
         +save(student: Student): Student
@@ -154,7 +156,7 @@ package com.tracer.repository {
     }
 }
 
-package com.tracer.controller {
+package com.tracer.controller <<Frame>>{
     class AuthController {
         +authService: AuthenticationService
         --
@@ -173,22 +175,13 @@ package com.tracer.controller {
     }
 }
 
-package com.tracer.model.response {
-    class LoginResponse {
-        +teacherUsername: String
-        +jwt: String
-        --
-        +LoginResponse()
-        +LoginResponse(teacherUsername: String, jwt: String)
-    }
-}
 
-AuthController --> AuthenticationService: Uses
-TeacherController --> TeacherService: Uses
-TeacherService --> TeacherRepository: Uses
-TeacherService --> StudentRepository: Uses
-TeacherService --> UserDetails: Implements
-TeacherService --> UserDetails: Returns
+TeacherController --> TeacherService
+AuthController --> AuthenticationService
+TeacherService --> TeacherRepository
+TeacherService --> StudentRepository
+TeacherService --> UserDetails
+TeacherService --> UserDetails
 TeacherService --> Student: Returns
 TeacherService --> Role: Uses
 TeacherService --> AuthorityRepository: Uses
@@ -199,7 +192,9 @@ AuthenticationService --> TokenService: Uses
 
 AuthController --> RegistrationRequest
 AuthController --> LoginRequest
+AuthController --> LoginResponse
 TeacherController --> AddStudentRequest
 TeacherController --> EditStudentRequest
+TeacherController --> GetStudentRequest
 
 @enduml

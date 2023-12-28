@@ -1,6 +1,8 @@
 @startuml
 
-package com.tracer.model {
+!theme mars
+
+package com.tracer.model <<Frame>> {
     package request {
         class AddStudentRequest
         class EditStudentRequest
@@ -18,23 +20,23 @@ package com.tracer.model {
     class Teacher
 }
 
-package com.tracer.service {
+package com.tracer.service <<Frame>> {
     class AuthenticationService
     class TeacherService
     class TokenService
 }
 
-package com.tracer.repository {
+package com.tracer.repository <<Database>> {
     class StudentRepository
     class AuthorityRepository
     class TeacherRepository
 }
 
-package com.tracer.controller {
+package com.tracer.controller <<Frame>> {
     class AuthController
     class TeacherController
 }
-Teacher --|> UserDetails
+Teacher --up|> UserDetails
 Role --|> GrantedAuthority
 Teacher --|> Role
 Teacher --|> Student
