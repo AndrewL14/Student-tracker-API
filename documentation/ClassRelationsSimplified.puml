@@ -1,0 +1,60 @@
+@startuml
+
+package com.tracer.model {
+    package request {
+        class AddStudentRequest
+        class EditStudentRequest
+        class GetStudentRequest
+        class LoginRequest
+        class RegistrationRequest
+    }
+
+    package response {
+        class LoginResponse
+    }
+
+    class Role
+    class Student
+    class Teacher
+}
+
+package com.tracer.service {
+    class AuthenticationService
+    class TeacherService
+    class TokenService
+}
+
+package com.tracer.repository {
+    class StudentRepository
+    class AuthorityRepository
+    class TeacherRepository
+}
+
+package com.tracer.controller {
+    class AuthController
+    class TeacherController
+}
+Teacher --|> UserDetails
+Role --|> GrantedAuthority
+Teacher --|> Role
+Teacher --|> Student
+
+AuthenticationService ..> TeacherService
+AuthenticationService ..> AuthorityRepository
+AuthenticationService ..> PasswordEncoder
+AuthenticationService ..> AuthenticationManager
+AuthenticationService ..> TokenService
+
+TeacherService ..> TeacherRepository
+TeacherService ..> StudentRepository
+
+TokenService ..> JwtEncoder
+TokenService ..> JwtDecoder
+
+AuthController ..> AuthenticationService
+TeacherController ..> TeacherService
+
+
+
+
+@enduml
