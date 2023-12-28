@@ -1,0 +1,62 @@
+@startuml
+
+!theme mars
+
+package com.tracer.model <<Frame>> {
+    package request {
+        class AddStudentRequest
+        class EditStudentRequest
+        class GetStudentRequest
+        class LoginRequest
+        class RegistrationRequest
+    }
+
+    package response {
+        class LoginResponse
+    }
+
+    class Role
+    class Student
+    class Teacher
+}
+
+package com.tracer.service <<Frame>> {
+    class AuthenticationService
+    class TeacherService
+    class TokenService
+}
+
+package com.tracer.repository <<Database>> {
+    class StudentRepository
+    class AuthorityRepository
+    class TeacherRepository
+}
+
+package com.tracer.controller <<Frame>> {
+    class AuthController
+    class TeacherController
+}
+Teacher --up|> UserDetails
+Role --|> GrantedAuthority
+Teacher --|> Role
+Teacher --|> Student
+
+AuthenticationService ..> TeacherService
+AuthenticationService ..> AuthorityRepository
+AuthenticationService ..> PasswordEncoder
+AuthenticationService ..> AuthenticationManager
+AuthenticationService ..> TokenService
+
+TeacherService ..> TeacherRepository
+TeacherService ..> StudentRepository
+
+TokenService ..> JwtEncoder
+TokenService ..> JwtDecoder
+
+AuthController ..> AuthenticationService
+TeacherController ..> TeacherService
+
+
+
+
+@enduml

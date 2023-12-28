@@ -1,0 +1,200 @@
+@startuml
+
+!theme mars
+
+package com.tracer.model <<Frame>>{
+    package request <<Frame>>{
+        class AddStudentRequest {
+            +name: String
+            +period: Integer
+            +grade: BigDecimal
+            --
+            +AddStudentRequest()
+            +AddStudentRequest(name: String, period: Integer, grade: BigDecimal)
+        }
+
+        class EditStudentRequest {
+            +studentId: Long
+            +periodToChange: Optional<Integer>
+            +nameToChange: String
+            +gradeToChange: Optional<Double>
+            --
+            +EditStudentRequest()
+            +EditStudentRequest(studentId: Long, periodToChange: Optional<Integer>, nameToChange: String, gradeToChange: Optional<Double>)
+        }
+
+        class GetStudentRequest {
+            +studentName: String
+            --
+            +GetStudentRequest()
+            +GetStudentRequest(studentName: String)
+        }
+
+        class LoginRequest {
+            +username: String
+            +password: String
+            --
+            +LoginRequest()
+            +LoginRequest(username: String, password: String)
+        }
+
+        class RegistrationRequest {
+            +username: String
+            +password: String
+            --
+            +RegistrationRequest()
+            +RegistrationRequest(username: String, password: String)
+        }
+    }
+
+    package response <<Frame>>{
+        class LoginResponse {
+            +teacherUsername: String
+            +jwt: String
+            --
+            +LoginResponse()
+            +LoginResponse(teacherUsername: String, jwt: String)
+        }
+    }
+
+    class Role {
+        +roleId: Integer
+        +authority: String
+        --
+        +Role()
+        +Role(authority: String)
+        +getRoleId(): Integer
+        +setRoleId(roleId: Integer): void
+        +getAuthority(): String
+        +setAuthority(authority: String): void
+    }
+
+    class Student {
+        +studentId: Long
+        +name: String
+        +period: Integer
+        +grade: BigDecimal
+        --
+        +Student()
+        +Student(name: String, period: Integer, grade: BigDecimal)
+    }
+
+    class Teacher {
+        +teacherId: Long
+        +username: String
+        +password: String
+        +students: List<Student>
+        +authorities: Set<Role>
+        --
+        +Teacher()
+        +Teacher(username: String, password: String, students: List<Student>, authorities: Set<Role>)
+        +Teacher(username: String, password: String, students: List<Student>)
+        +isAccountNonExpired(): boolean
+        +isAccountNonLocked(): boolean
+        +isCredentialsNonExpired(): boolean
+        +isEnabled(): boolean
+    }
+}
+
+Role --|> GrantedAuthority
+Teacher --|> UserDetails
+Teacher --|> Role
+Teacher --|> Student
+
+package com.tracer.service <<Service>>{
+    class AuthenticationService {
+        +teacherService: TeacherService
+        +roleRepository: AuthorityRepository
+        +passwordEncoder: PasswordEncoder
+        +authenticationManager: AuthenticationManager
+        +tokenService: TokenService
+        --
+        +registerUser(username: String, password: String): LoginResponse
+        +loginUser(username: String, password: String): LoginResponse
+    }
+
+    class TeacherService implements UserDetailsService {
+        +teacherRepository: TeacherRepository
+        +studentRepository: StudentRepository
+        --
+        +getAllStudentsByTeacherUsername(username: String): List<Student>
+        +getStudentsByName(teacherUsername: String, studentName: String): List<Student>
+        +addStudent(request: AddStudentRequest, teacherUsername: String): List<Student>
+        +editExistingStudent(request: EditStudentRequest, teacherUsername: String): List<Student>
+        +deleteStudent(studentId: Long, teacherUsername: String): void
+        +loadUserByUsername(username: String): UserDetails
+        +saveNewTeacher(teacher: Teacher): UserDetails
+    }
+
+    class TokenService {
+        +jwtEncoder: JwtEncoder
+        +jwtDecoder: JwtDecoder
+        --
+        +generateJwt(auth: Authentication): String
+    }
+}
+
+package com.tracer.repository <<Database>>{
+    class StudentRepository {
+        --
+        +save(student: Student): Student
+        +findById(studentId: Long): Optional<Student>
+        +delete(student: Student): void
+        +findAll(): List<Student>
+    }
+
+    class AuthorityRepository {
+        --
+        +save(role: Role): Role
+        +findByAuthority(authority: String): Optional<Role>
+    }
+
+    class TeacherRepository {
+        --
+        +save(teacher: Teacher): Teacher
+        +findByUsername(username: String): Optional<Teacher>
+    }
+}
+
+package com.tracer.controller <<Frame>>{
+    class AuthController {
+        +authService: AuthenticationService
+        --
+        +registerUser(request: RegistrationRequest): ResponseEntity<LoginResponse>
+        +loginUser(request: LoginRequest): ResponseEntity<LoginResponse>
+    }
+
+    class TeacherController {
+        +service: TeacherService
+        --
+        +getAllStudents(authentication: Authentication): ResponseEntity<List<Student>>
+        +getStudentsByName(studentName: String, authentication: Authentication): ResponseEntity<List<Student>>
+        +addStudent(request: AddStudentRequest, authentication: Authentication): ResponseEntity<List<Student>>
+        +editExistingStudent(request: EditStudentRequest, authentication: Authentication): ResponseEntity<List<Student>>
+        +deleteExistingStudent(studentId: Long, authentication: Authentication): ResponseEntity<?>
+    }
+}
+
+
+TeacherController --> TeacherService
+AuthController --> AuthenticationService
+TeacherService --> TeacherRepository
+TeacherService --> StudentRepository
+TeacherService --> UserDetails
+TeacherService --> UserDetails
+TeacherService --> Student: Returns
+TeacherService --> Role: Uses
+TeacherService --> AuthorityRepository: Uses
+TeacherService --> JwtEncoder: Uses
+TeacherService --> JwtDecoder: Uses
+
+AuthenticationService --> TokenService: Uses
+
+AuthController --> RegistrationRequest
+AuthController --> LoginRequest
+AuthController --> LoginResponse
+TeacherController --> AddStudentRequest
+TeacherController --> EditStudentRequest
+TeacherController --> GetStudentRequest
+
+@enduml
