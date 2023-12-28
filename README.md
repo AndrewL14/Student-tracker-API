@@ -37,6 +37,10 @@ Currently, the UI is incomplete, only the login and register pages have been imp
 If you wish to deploy this project for your self, create an application-prod.properties file and 
 Configure accordingly
 
+### Documentation
+[![Simplified Class Diagram](documentation/ClassRelationsSimplified.png)](documentation/ClassRelationsSimplified.puml)
+or visit the [compressive Diagram](documentation/ClassRelations.puml)
+
 ## Sample request
 The way the project is set up you will need to log in before calling any methods, as you will need a 
 VALID JWT to call the other methods. And make sure the program is running. 
