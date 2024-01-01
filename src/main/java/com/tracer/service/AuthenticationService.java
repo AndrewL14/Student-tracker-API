@@ -72,7 +72,6 @@ public class AuthenticationService {
         );
         String token = tokenService.generateJwt(authentication);
         Teacher teacher = (Teacher) teacherService.loadUserByUsername(username);
-        Set<Student> students = teacher.getStudents();
         return  new LoginResponse(teacher.getUsername(), token);
     }
 }
