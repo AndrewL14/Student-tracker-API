@@ -14,16 +14,14 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.MockitoAnnotations.*;
 
 public class TeacherServiceTest {
-    private Teacher testTeacher = new Teacher("james", "passowrd", new ArrayList<>());
-    private Student testStudent = new Student("jhon", 2, BigDecimal.ONE);
+    private Teacher testTeacher = new Teacher("james", "passowrd", new HashSet<>());
+    private Student testStudent = new Student("Jhon Smith", 2, BigDecimal.ONE);
 
 
     @Mock
@@ -41,7 +39,7 @@ public class TeacherServiceTest {
     @Test
     public void getAllStudentsByTeacherUsername_ExistingTeacher_listOfStudents() {
         // GIVEN
-        List<Student> students = new ArrayList<>();
+        Set<Student> students = new HashSet<>();
         students.add(testStudent);
         testTeacher.setStudents(students);
 
@@ -71,7 +69,7 @@ public class TeacherServiceTest {
     @Test
     public void getStudentByName_validTeacherValidStudent_ListOfStudents() {
         // GIVEN
-        List<Student> students = new ArrayList<>();
+        Set<Student> students = new HashSet<>();
         students.add(testStudent);
         testTeacher.setStudents(students);
 
@@ -146,7 +144,7 @@ public class TeacherServiceTest {
     public void editExistingStudent_validRequest_ListOfStudents() {
         // GIVEN
         Long studentId = 1L;
-        List<Student> students = new ArrayList<>();
+        Set<Student> students = new HashSet<>();
         testStudent.setStudentId(studentId);
         students.add(testStudent);
         testTeacher.setStudents(students);
@@ -190,7 +188,7 @@ public class TeacherServiceTest {
     public void editExistingStudent_IncompleteRequest_returnsUpdatedList() {
         // GIVEN
         Long studentId = 1L;
-        List<Student> students = new ArrayList<>();
+        Set<Student> students = new HashSet<>();
         testStudent.setStudentId(studentId);
         students.add(testStudent);
         testTeacher.setStudents(students);
@@ -220,7 +218,7 @@ public class TeacherServiceTest {
     public void deleteStudent_validRequest() {
         // GIVEN
         Long studentId = 1L;
-        List<Student> students = new ArrayList<>();
+        Set<Student> students = new HashSet<>();
         testStudent.setStudentId(studentId);
         students.add(testStudent);
         testTeacher.setStudents(students);
