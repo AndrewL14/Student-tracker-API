@@ -4,7 +4,6 @@ import com.tracer.model.Student;
 import com.tracer.model.Teacher;
 import com.tracer.model.request.AddStudentRequest;
 import com.tracer.model.request.EditStudentRequest;
-import com.tracer.model.request.GetStudentRequest;
 import com.tracer.repository.StudentRepository;
 import com.tracer.repository.TeacherRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,9 +14,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -37,7 +34,7 @@ public class TeacherService implements UserDetailsService {
         Teacher teacher = teacherRepository.findByUsername(username)
                 .orElseThrow(NullPointerException::new);
 
-        return teacher.getStudents();
+        return teacher.getStudents().parallelStream().toList();
     }
 
     /**
@@ -51,7 +48,7 @@ public class TeacherService implements UserDetailsService {
         Teacher teacher = teacherRepository.findByUsername(teacherUsername)
                 .orElseThrow(NullPointerException::new);
 
-        return teacher.getStudents().stream()
+        return teacher.getStudents().parallelStream()
                 .filter(student -> Objects.equals(student.getName(), studentName))
                 .collect(Collectors.toList());
     }
@@ -65,12 +62,13 @@ public class TeacherService implements UserDetailsService {
         Teacher teacher = teacherRepository.findByUsername(teacherUsername)
                 .orElseThrow(NullPointerException::new);
         Student studentToAdd = new Student(request.getName() , request.getPeriod(), request.getGrade());
-        List<Student> students = teacher.getStudents();
+        Set<Student> students = teacher.getStudents();
+        if (students.contains(studentToAdd)) throw new RuntimeException("Student Already Exist");
         students.add(studentToAdd);
         teacher.setStudents(students);
         teacherRepository.save(teacher);
         studentRepository.save(studentToAdd);
-        return students;
+        return students.parallelStream().toList();
     }
 
     /**
@@ -82,7 +80,7 @@ public class TeacherService implements UserDetailsService {
         Teacher teacher = teacherRepository.findByUsername(teacherUsername)
                 .orElseThrow(() -> new IllegalArgumentException("Teacher not found"));
 
-        List<Student> updatedStudents = teacher.getStudents().stream()
+        List<Student> updatedStudents = teacher.getStudents().parallelStream()
                 .peek(student -> {
                     if (student.getStudentId().equals(request.getStudentId())) {
                         request.getGradeToChange().ifPresent(grade -> student.setGrade(BigDecimal.valueOf(grade)));
@@ -108,7 +106,7 @@ public class TeacherService implements UserDetailsService {
     public void deleteStudent(Long studentId, String teacherUsername) {
         Teacher teacher = teacherRepository.findByUsername(teacherUsername)
                 .orElseThrow(NullPointerException::new);
-        Optional<Student> studentToDelete = teacher.getStudents().stream()
+        Optional<Student> studentToDelete = teacher.getStudents().parallelStream()
                         .filter(student -> student.getStudentId().equals(studentId))
                                 .findFirst();
         studentToDelete.ifPresent(teacher.getStudents()::remove);

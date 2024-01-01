@@ -50,7 +50,7 @@ public class AuthenticationService {
 
         authorities.add(userRole);
 
-        Teacher teacher = (Teacher) teacherService.saveNewTeacher(new Teacher(username, encodedPassword, new ArrayList<>(),
+        Teacher teacher = (Teacher) teacherService.saveNewTeacher(new Teacher(username, encodedPassword, new HashSet<>(),
                 authorities));
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(username, password)
@@ -72,7 +72,6 @@ public class AuthenticationService {
         );
         String token = tokenService.generateJwt(authentication);
         Teacher teacher = (Teacher) teacherService.loadUserByUsername(username);
-        List<Student> students = teacher.getStudents();
         return  new LoginResponse(teacher.getUsername(), token);
     }
 }

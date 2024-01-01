@@ -25,7 +25,7 @@ public class Teacher implements UserDetails {
     private String username;
     private String password;
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL)
-    private List<Student> students;
+    private Set<Student> students;
     @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "Teacher_role_junction", joinColumns = { @JoinColumn(name = "teacher_id") }, inverseJoinColumns = {
             @JoinColumn(name = "role_id") })
@@ -34,14 +34,14 @@ public class Teacher implements UserDetails {
     public Teacher() {
     }
 
-    public Teacher(String username , String password , List<Student> students , Set<Role> authorities) {
+    public Teacher(String username , String password , Set<Student> students , Set<Role> authorities) {
         this.username = username;
         this.password = password;
         this.students = students;
         this.authorities = authorities;
     }
 
-    public Teacher(String username , String password , List<Student> students) {
+    public Teacher(String username , String password , Set<Student> students) {
         this.username = username;
         this.password = password;
         this.students = students;
