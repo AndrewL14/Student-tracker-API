@@ -38,11 +38,11 @@ public class StudentTrackerApiApplication {
 			authorities.add(role);
 
 			Student student = new Student();
-			student.setName("jhon");
+			student.setName("Jhon Smith");
 			student.setGrade(BigDecimal.valueOf(1));
 			student.setPeriod(1);
 
-			List<Student> temp = new ArrayList<>();
+			Set<Student> temp = new HashSet<>();
 			temp.add(student);
 			Teacher teacher = new Teacher("james", passwordEncoder.encode("password") , temp);
 			teacher.setAuthorities(authorities);
