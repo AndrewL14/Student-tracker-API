@@ -44,7 +44,7 @@ public class StudentTrackerApiApplication {
 
 			Set<Student> temp = new HashSet<>();
 			temp.add(student);
-			Teacher teacher = new Teacher("james", passwordEncoder.encode("password") , temp);
+			Teacher teacher = new Teacher("james", passwordEncoder.encode("password") , "example@gmail.com", temp);
 			teacher.setAuthorities(authorities);
 			teacherRepository.save(teacher);
 			studentRepository.save(student);
