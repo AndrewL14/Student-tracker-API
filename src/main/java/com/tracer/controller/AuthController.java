@@ -1,6 +1,7 @@
 package com.tracer.controller;
 
-import com.tracer.model.request.LoginRequest;
+import com.tracer.model.request.BasicLoginRequest;
+import com.tracer.model.request.EmailLoginRequest;
 import com.tracer.model.request.RegistrationRequest;
 import com.tracer.model.response.LoginResponse;
 import com.tracer.service.AuthenticationService;
@@ -19,13 +20,26 @@ public class AuthController {
     @PostMapping("/register")
     public ResponseEntity<LoginResponse> registerUser(@RequestBody RegistrationRequest request) {
         return new ResponseEntity<LoginResponse>(
-                authService.registerUser(request.getUsername(), request.getPassword()), HttpStatus.OK);
+                authService.registerUser(request.getUsername(), request.getEmail() , request.getPassword()), HttpStatus.OK);
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponse>  loginUser(@RequestBody LoginRequest request) {
+    @PostMapping("/login/basic")
+    public ResponseEntity<LoginResponse>  loginUserByUsername(@RequestBody BasicLoginRequest request) {
         return new ResponseEntity<LoginResponse>(
-          authService.loginUser(request.getUsername(), request.getPassword()), HttpStatus.OK
+          authService.loginUserByUsername(request.getUsername(), request.getPassword()), HttpStatus.OK
+        );
+    }
+
+    @PostMapping("/login/email")
+    public ResponseEntity<LoginResponse>  loginUserByEmail(@RequestBody EmailLoginRequest request) {
+        return new ResponseEntity<LoginResponse>(
+                authService.loginUserByEmail(request.getEmail(), request.getPassword()), HttpStatus.OK
+        );
+    }
+
+    @GetMapping("/verify/email{token}")
+    public ResponseEntity<String> verifyEmail(@RequestParam String token) {
+        return new ResponseEntity<String>(authService.verifyEmail(token) , HttpStatus.OK
         );
     }
 }
