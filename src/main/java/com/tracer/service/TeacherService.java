@@ -98,6 +98,10 @@ public class TeacherService implements UserDetailsService {
         return updatedStudents;
     }
 
+    public void updateTeacherEmailStatus(Teacher teacher) {
+        teacherRepository.save(teacher);
+    }
+
     /**
      * Deletes student using a teacher username and student Id
      * @param studentId unique id given to student objects
@@ -126,6 +130,11 @@ public class TeacherService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         Optional<Teacher> teacherOpt = teacherRepository.findByUsername(username);
+        return teacherOpt.orElseThrow(() -> new UsernameNotFoundException("Invalid Credentials"));
+    }
+
+    public UserDetails loadUserByEmail(String email) throws UsernameNotFoundException {
+        Optional<Teacher> teacherOpt = teacherRepository.findByEmail(email);
         return teacherOpt.orElseThrow(() -> new UsernameNotFoundException("Invalid Credentials"));
     }
 
