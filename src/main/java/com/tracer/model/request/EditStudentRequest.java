@@ -1,9 +1,6 @@
 package com.tracer.model.request;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.util.Optional;
 
@@ -11,6 +8,7 @@ import java.util.Optional;
 @AllArgsConstructor
 @Getter
 @Setter
+@ToString
 public class EditStudentRequest {
     private Long studentId;
     private Optional<Integer> periodToChange = Optional.empty();
