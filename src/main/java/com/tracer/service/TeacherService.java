@@ -98,7 +98,7 @@ public class TeacherService implements UserDetailsService {
         return updatedStudents;
     }
 
-    public void updateTeacherEmailStatus(Teacher teacher) {
+    public void saveTeacher(Teacher teacher) {
         teacherRepository.save(teacher);
     }
 
