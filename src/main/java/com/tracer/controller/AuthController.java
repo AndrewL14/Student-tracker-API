@@ -42,4 +42,15 @@ public class AuthController {
         return new ResponseEntity<String>(authService.verifyEmail(token) , HttpStatus.OK
         );
     }
+    @PostMapping("/initiate-reset{email}")
+    public void initiatePasswordReset(@RequestParam String email) {
+        authService.initiatePasswordReset(email);
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<LoginResponse> completePasswordReset(@RequestParam String token, @RequestParam String password) {
+        return new ResponseEntity<LoginResponse>(
+                authService.completePasswordReset(token, password), HttpStatus.OK
+        );
+    }
 }
