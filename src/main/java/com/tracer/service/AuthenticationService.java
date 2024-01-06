@@ -1,13 +1,13 @@
 package com.tracer.service;
 
 import com.tracer.model.EmailToken;
+import com.tracer.model.PasswordResetToken;
 import com.tracer.model.Role;
-import com.tracer.model.Student;
 import com.tracer.model.Teacher;
 import com.tracer.model.response.LoginResponse;
 import com.tracer.repository.AuthorityRepository;
 import com.tracer.repository.EmailTokenRepository;
-import com.tracer.repository.TeacherRepository;
+import com.tracer.repository.PasswordResetTokenRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -17,9 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 @Service
@@ -33,7 +31,8 @@ public class AuthenticationService {
     private EmailTokenRepository emailTokenRepository;
     @Autowired
     private PasswordEncoder passwordEncoder;
-
+    @Autowired
+    private PasswordResetTokenRepository resetTokenRepository;
     @Autowired
     private AuthenticationManager authenticationManager;
     @Autowired
@@ -105,8 +104,31 @@ public class AuthenticationService {
         tokenToBeVerified.setVerifiedAt(LocalDateTime.now());
         tokenToBeVerified.setVerified(true);
         emailTokenRepository.save(tokenToBeVerified);
-        teacherService.updateTeacherEmailStatus(teacher);
+        teacherService.saveTeacher(teacher);
 
         return "Email verified";
+    }
+
+    public void initiatePasswordReset(String email) {
+        teacherService.loadUserByEmail(email);
+        mailSenderService.sendPasswordReset(email);
+    }
+
+    public LoginResponse completePasswordReset(String token, String password) {
+        PasswordResetToken resetToken = resetTokenRepository.findByToken(token)
+                .orElseThrow(NullPointerException::new);
+        String encodedPassword = passwordEncoder.encode(password);
+
+        Teacher teacherToUpdate = resetToken.getTeacher();
+        teacherToUpdate.setPassword(encodedPassword);
+        resetToken.setVerifiedAt(LocalDateTime.now());
+        teacherService.saveTeacher(teacherToUpdate);
+
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(teacherToUpdate.getUsername(), password)
+        );
+        String jwt = tokenService.generateJwt(authentication);
+
+        return new LoginResponse(teacherToUpdate.getUsername(), jwt);
     }
 }
