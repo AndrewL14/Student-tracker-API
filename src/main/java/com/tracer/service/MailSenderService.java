@@ -74,7 +74,7 @@ public class MailSenderService {
         });
     }
 
-    private PasswordResetToken generateNewPasswordResetToken(String email) {
+    public PasswordResetToken generateNewPasswordResetToken(String email) {
         Teacher teacher = teacherRepository.findByEmail(email)
                 .orElseThrow(NullPointerException::new);
         String token = tokenService.generateEmailVerificationToken();
@@ -86,7 +86,7 @@ public class MailSenderService {
         );
     }
 
-    private EmailToken generateNewEmailToken(String email) {
+    public EmailToken generateNewEmailToken(String email) {
         Teacher teacher =  teacherRepository.findByEmail(email)
                 .orElseThrow(NullPointerException::new);
         String token = tokenService.generateEmailVerificationToken();
