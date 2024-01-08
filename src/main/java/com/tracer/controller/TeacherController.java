@@ -3,7 +3,6 @@ package com.tracer.controller;
 import com.tracer.model.Student;
 import com.tracer.model.request.AddStudentRequest;
 import com.tracer.model.request.EditStudentRequest;
-import com.tracer.model.request.GetStudentRequest;
 import com.tracer.service.TeacherService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;

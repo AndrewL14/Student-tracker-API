@@ -14,7 +14,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -53,10 +53,11 @@ public class AuthenticationServiceTest {
     public void registerUser_validRequest_Teacher() {
         // GIVEN
         String username = "james";
+        String email = "example@gmail.com";
         String password = "password";
         String mockToken = "mockToken";
         String encodedPassword = passwordEncoder.encode(password);
-        testTeacher.setStudents(new ArrayList<>());
+        testTeacher.setStudents(new HashSet<>());
         testTeacher.setUsername(username);
         testTeacher.setPassword(encodedPassword);
         // WHEN
@@ -64,7 +65,7 @@ public class AuthenticationServiceTest {
         when(passwordEncoder.encode(password)).thenReturn(encodedPassword);
         when(authorityRepository.findByAuthority("TEACHER")).thenReturn(Optional.of(role));
         when(teacherService.saveNewTeacher(any())).thenReturn(testTeacher);
-        LoginResponse response = authenticationService.registerUser(username, password);
+        LoginResponse response = authenticationService.registerUser(username, email, password);
 
         // THEN
         assertNotNull(response, "expected response to NOT be null");
@@ -78,12 +79,12 @@ public class AuthenticationServiceTest {
         String username = "james";
         String password = "Password";
         String mockToken = "mockToken";
-        testTeacher.setStudents(new ArrayList<>());
+        testTeacher.setStudents(new HashSet<>());
 
         // WHEN
         when(tokenService.generateJwt(any())).thenReturn(mockToken);
         when(teacherService.loadUserByUsername(username)).thenReturn(testTeacher);
-        LoginResponse response = authenticationService.loginUser(username, password);
+        LoginResponse response = authenticationService.loginUserByUsername(username, password);
 
         // THEN
         assertNotNull(response);
@@ -108,7 +109,7 @@ public class AuthenticationServiceTest {
 
         // THEN
         assertThrows(NullPointerException.class, ()-> {
-            LoginResponse result = authenticationService.loginUser(username, password);
+            LoginResponse result = authenticationService.loginUserByUsername(username, password);
         });
         verify(tokenService).generateJwt(any());
         verify(teacherService).loadUserByUsername(username);
