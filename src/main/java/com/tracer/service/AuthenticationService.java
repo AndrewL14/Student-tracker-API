@@ -94,11 +94,7 @@ public class AuthenticationService {
     public String verifyEmail(String token) {
         EmailToken tokenToBeVerified = emailTokenRepository.findByToken(token)
                 .orElseThrow(() -> new RuntimeException("Invalid token"));
-        if (tokenToBeVerified.isExpired()) throw new IllegalStateException("Token expired");
-        if (tokenToBeVerified.isVerified()) throw new IllegalStateException("Token already verified");
-        if (tokenToBeVerified.getTeacher() == null) throw new IllegalStateException("Token not associated with a teacher");
-        if (tokenToBeVerified.getTeacher().isEmailVerified()) throw new IllegalStateException("Email already verified");
-
+        validateToken(tokenToBeVerified);
         Teacher teacher = tokenToBeVerified.getTeacher();
         teacher.setEmailVerified(true);
         tokenToBeVerified.setVerifiedAt(LocalDateTime.now());
@@ -130,5 +126,12 @@ public class AuthenticationService {
         String jwt = tokenService.generateJwt(authentication);
 
         return new LoginResponse(teacherToUpdate.getUsername(), jwt);
+    }
+
+    private void validateToken(EmailToken token) {
+        if (token.isExpired()) throw new IllegalStateException("Token expired");
+        if (token.isVerified()) throw new IllegalStateException("Token already verified");
+        if (token.getTeacher() == null) throw new IllegalStateException("Token not associated with a teacher");
+        if (token.getTeacher().isEmailVerified()) throw new IllegalStateException("Email already verified");
     }
 }
