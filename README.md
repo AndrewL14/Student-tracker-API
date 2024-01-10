@@ -52,11 +52,11 @@ VALID JWT to call the other methods. And make sure the program is running.
 Replace YOUR_ACCESS_TOKEN with the JWT you get when logging in.
 ### POST Register
 ```sh 
-curl -X POST -H "Content-Type: application/json" -d '{"username": "your_username", "password": "your_password"}' http://localhost:8000/auth/register
+curl -X POST -H "Content-Type: application/json" -d '{"username": "your_username", "email": "<your_email>"  "password": "your_password"}' http://localhost:8000/auth/register
 ```
 ### POST Log in
 ``` sh
-curl -X POST -H "Content-Type: application/json" -d '{"username": "james", "password": "password"}' http://localhost:8000/auth/login
+curl -X POST -H "Content-Type: application/json" -d '{"username": "james", "password": "password"}' http://localhost:8000/auth/login/basic
 ```
 
 All other request are in postman. In the Auth tab select `Bearer Token` and put your JWT in.
