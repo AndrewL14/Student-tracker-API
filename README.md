@@ -45,6 +45,8 @@ Configure accordingly
 [![Simplified Class Diagram](documentation/ClassRelationsSimplified.png)](documentation/ClassRelationsSimplified.puml)
 or visit the [compressive Diagram](documentation/ClassRelations.puml)
 
+for information involving the new mailing system and request go to [Email Systems](documentation/EmailServiceDoc/EMAIL_DOCUMENTATION.md)
+
 ## Sample request
 The way the project is set up you will need to log in before calling any methods, as you will need a 
 VALID JWT to call the other methods. And make sure the program is running. 
