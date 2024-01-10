@@ -1,0 +1,16 @@
+@startuml
+!theme reddress-lightblue
+participant Client
+participant Backend
+participant Database
+participant ClientApp
+
+Client -> Backend: SendVerifyEmailRequest
+Backend -> Database: findByEmail()
+Database --> Backend: User
+Backend -> Backend: emailVerified = verifyEmail()
+
+Backend --> ClientApp: emailVerified if emailVerified
+Backend --> ClientApp: notifyUserInvalidEmail if not emailVerified
+
+@enduml
