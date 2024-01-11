@@ -5,6 +5,7 @@ import com.tracer.model.request.EmailLoginRequest;
 import com.tracer.model.request.RegistrationRequest;
 import com.tracer.model.response.LoginResponse;
 import com.tracer.service.AuthenticationService;
+import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +43,12 @@ public class AuthController {
         return new ResponseEntity<String>(authService.verifyEmail(token) , HttpStatus.OK
         );
     }
+    @GetMapping("verify/send{email}")
+    public ResponseEntity<String> sendEmailVerification(@RequestParam String email) {
+        authService.sendEmailVerification(email);
+        return new ResponseEntity<String>("201", HttpStatus.OK);
+    }
+
     @PostMapping("/initiate-reset{email}")
     public void initiatePasswordReset(@RequestParam String email) {
         authService.initiatePasswordReset(email);

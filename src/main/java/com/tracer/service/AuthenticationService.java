@@ -57,7 +57,7 @@ public class AuthenticationService {
         Teacher teacher = new Teacher(username, email, encodedPassword, new HashSet<>(),
                 authorities);
         teacherService.saveNewTeacher(teacher);
-        mailSenderService.SendEmailVerification(email);
+        mailSenderService.sendEmailVerification(email);
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(username, password)
         );
@@ -89,6 +89,10 @@ public class AuthenticationService {
         );
         String token = tokenService.generateJwt(authentication);
         return new LoginResponse(teacher.getUsername(), token);
+    }
+
+    public void sendEmailVerification(String email) {
+        mailSenderService.sendEmailVerification(email);
     }
 
     public String verifyEmail(String token) {

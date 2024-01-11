@@ -52,7 +52,7 @@ public class MailSenderService {
         });
     }
 
-    public void SendEmailVerification(String email) {
+    public void sendEmailVerification(String email) {
         String subject = "Grader: Verify Email";
         String verificationLink = "http://localhost:8000/auth/verify/email?token=";
         EmailToken emailToken = generateNewEmailToken(email);
