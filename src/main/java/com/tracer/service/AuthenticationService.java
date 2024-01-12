@@ -105,6 +105,7 @@ public class AuthenticationService {
         tokenToBeVerified.setVerified(true);
         emailTokenRepository.save(tokenToBeVerified);
         teacherService.saveTeacher(teacher);
+        emailTokenRepository.delete(tokenToBeVerified);
 
         return "Email verified";
     }
@@ -118,6 +119,7 @@ public class AuthenticationService {
         PasswordResetToken resetToken = resetTokenRepository.findByToken(token)
                 .orElseThrow(NullPointerException::new);
         String encodedPassword = passwordEncoder.encode(password);
+        validatePasswordResetToken(resetToken);
 
         Teacher teacherToUpdate = resetToken.getTeacher();
         teacherToUpdate.setPassword(encodedPassword);
@@ -128,13 +130,20 @@ public class AuthenticationService {
                 new UsernamePasswordAuthenticationToken(teacherToUpdate.getUsername(), password)
         );
         String jwt = tokenService.generateJwt(authentication);
-
+        resetTokenRepository.delete(resetToken);
         return new LoginResponse(teacherToUpdate.getUsername(), jwt);
     }
 
     private void validateToken(EmailToken token) {
         if (token.isExpired()) throw new IllegalStateException("Token expired");
         if (token.isVerified()) throw new IllegalStateException("Token already verified");
+        if (token.getTeacher() == null) throw new IllegalStateException("Token not associated with a teacher");
+        if (token.getTeacher().isEmailVerified()) throw new IllegalStateException("Email already verified");
+    }
+
+    private void validatePasswordResetToken(PasswordResetToken token) {
+        if (LocalDateTime.now().isAfter(token.getExpiresAt())) throw new IllegalStateException("Token expired");
+        if (token.getVerifiedAt() != null) throw new IllegalStateException("Token already verified");
         if (token.getTeacher() == null) throw new IllegalStateException("Token not associated with a teacher");
         if (token.getTeacher().isEmailVerified()) throw new IllegalStateException("Email already verified");
     }
