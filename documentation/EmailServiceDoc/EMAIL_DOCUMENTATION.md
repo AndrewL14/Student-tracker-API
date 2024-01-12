@@ -55,6 +55,11 @@ You get the verification email when you register automatically.
 curl -X GET http://localhost:8000/auth/verify/email?token=<your_token>
 ```
 
+### Send verification link
+``` sh
+curl -X GET http://localhost:8000/auth/verify/send?email=<your_email>
+```
+
 ### POST Initiate password reset
 ``` sh
 curl -X POST http://localhost:8000/auth/initiate-reset?email=<your_email>
