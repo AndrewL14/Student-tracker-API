@@ -135,16 +135,13 @@ public class AuthenticationService {
     }
 
     private void validateToken(EmailToken token) {
-        if (token.isExpired()) throw new IllegalStateException("Token expired");
-        if (token.isVerified()) throw new IllegalStateException("Token already verified");
+        if (LocalDateTime.now().isAfter(token.getExpiresAt())) throw new IllegalStateException("Token expired");
         if (token.getTeacher() == null) throw new IllegalStateException("Token not associated with a teacher");
         if (token.getTeacher().isEmailVerified()) throw new IllegalStateException("Email already verified");
     }
 
     private void validatePasswordResetToken(PasswordResetToken token) {
         if (LocalDateTime.now().isAfter(token.getExpiresAt())) throw new IllegalStateException("Token expired");
-        if (token.getVerifiedAt() != null) throw new IllegalStateException("Token already verified");
         if (token.getTeacher() == null) throw new IllegalStateException("Token not associated with a teacher");
-        if (token.getTeacher().isEmailVerified()) throw new IllegalStateException("Email already verified");
     }
 }
