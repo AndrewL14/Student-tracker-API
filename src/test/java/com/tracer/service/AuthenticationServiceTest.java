@@ -1,9 +1,13 @@
 package com.tracer.service;
 
+import com.tracer.model.EmailToken;
+import com.tracer.model.PasswordResetToken;
 import com.tracer.model.Role;
 import com.tracer.model.Teacher;
 import com.tracer.model.response.LoginResponse;
 import com.tracer.repository.AuthorityRepository;
+import com.tracer.repository.EmailTokenRepository;
+import com.tracer.repository.PasswordResetTokenRepository;
 import com.tracer.repository.TeacherRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -14,6 +18,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Optional;
 
@@ -23,6 +28,10 @@ import static org.mockito.Mockito.*;
 import static org.mockito.MockitoAnnotations.*;
 
 public class AuthenticationServiceTest {
+    @Mock
+    private EmailTokenRepository emailTokenRepository;
+    @Mock
+    private PasswordResetTokenRepository passwordResetTokenRepository;
     @Mock
     private TeacherService teacherService;
     @Mock
@@ -37,6 +46,8 @@ public class AuthenticationServiceTest {
     private TokenService tokenService;
     @Mock
     private Authentication authentication;
+    @Mock
+    private MailSenderService mailSenderService;
     @InjectMocks
     private AuthenticationService authenticationService;
     private final Teacher testTeacher = new Teacher();
@@ -113,5 +124,151 @@ public class AuthenticationServiceTest {
         });
         verify(tokenService).generateJwt(any());
         verify(teacherService).loadUserByUsername(username);
+    }
+
+    @Test
+    public void verifyEmail_validToken_emailVerified() {
+        // GIVEN
+        EmailToken emailToken = new EmailToken("12345", testTeacher, LocalDateTime.now()
+        ,LocalDateTime.now().plusMinutes(10));
+        String validToken = "12345";
+
+        // WHEN
+        when(emailTokenRepository.findByToken("12345")).thenReturn(Optional.of(emailToken));
+        String response = authenticationService.verifyEmail(validToken);
+
+        // THEN
+        assertNotNull(response);
+        assertTrue(testTeacher.isEmailVerified());
+        assertEquals("Email verified", response);
+    }
+
+    @Test
+    public void verifyEmail_expiredToken_exception() {
+        // GIVEN
+        EmailToken expiredEmailToken = new EmailToken("12345", testTeacher, LocalDateTime.now().plusMinutes(5)
+                ,LocalDateTime.now());
+        String validToken = "12345";
+
+        // WHEN / THEN
+        when(emailTokenRepository.findByToken("12345")).thenReturn(Optional.of(expiredEmailToken));
+        assertThrowsExactly(IllegalStateException.class, () ->{
+            authenticationService.verifyEmail(validToken);
+            verify(IllegalStateException.class);
+        }, "Token Expired");
+    }
+
+    @Test
+    public void verifyEmail_InvalidToken_exception() {
+        // GIVEN
+        EmailToken invalidEmailToken = new EmailToken();
+        invalidEmailToken.setToken("12345");
+        invalidEmailToken.setCreatedAt(LocalDateTime.now());
+        invalidEmailToken.setExpiresAt(LocalDateTime.now().plusMinutes(1));
+        String validToken = "12345";
+
+        // WHEN / THEN
+        when(emailTokenRepository.findByToken("12345")).thenReturn(Optional.of(invalidEmailToken));
+        assertThrowsExactly(IllegalStateException.class, () ->{
+            authenticationService.verifyEmail(validToken);
+            verify(IllegalStateException.class);
+        }, "Token not associated with a teacher");
+    }
+
+    @Test
+    public void verifyEmail_emailAlreadyVerified_exception() {
+        // GIVEN
+        testTeacher.setEmailVerified(true);
+        EmailToken alreadyVerifiedToken = new EmailToken("12345", testTeacher, LocalDateTime.now().plusMinutes(5)
+                ,LocalDateTime.now());
+        String validToken = "12345";
+
+        // WHEN / THEN
+        when(emailTokenRepository.findByToken("12345")).thenReturn(Optional.of(alreadyVerifiedToken));
+        assertThrowsExactly(IllegalStateException.class, () ->{
+            authenticationService.verifyEmail(validToken);
+            verify(IllegalStateException.class);
+        }, "Email already verified");
+    }
+
+    @Test
+    public void verifyEmail_nullToken_exception() {
+        // GIVEN
+        String invalidToken = "12345";
+
+        // WHEN / THEN
+        assertThrowsExactly(RuntimeException.class, () ->{
+            authenticationService.verifyEmail(invalidToken);
+            verify(RuntimeException.class);
+        }, "Invalid token");
+    }
+
+    @Test
+    public void completePasswordReset_validRequest_loginResponse() {
+        // GIVEN
+        PasswordResetToken passwordResetToken = new PasswordResetToken("12345", "example@gmail.com",
+                LocalDateTime.now(), LocalDateTime.now().plusMinutes(10), testTeacher);
+        String validToken = "12345";
+        String newPassword = "new_password";
+        String encodedPassword = passwordEncoder.encode(newPassword);
+        testTeacher.setUsername("username");
+
+        // WHEN
+        when(passwordResetTokenRepository.findByToken("12345")).thenReturn(Optional.of(passwordResetToken));
+        LoginResponse response = authenticationService.completePasswordReset(validToken, newPassword);
+
+        // THEN
+        assertNotNull(response);
+        assertEquals(encodedPassword, testTeacher.getPassword());
+        assertEquals("username", response.getTeacherUsername());
+        verify(passwordEncoder, times(2)).encode(any());
+        verify(authenticationManager).authenticate(any());
+    }
+
+    @Test
+    public void completePasswordReset_expiredToken_exception() {
+        // GIVEN
+        PasswordResetToken expiredToken = new PasswordResetToken("12345", "example@gmail.com",
+                LocalDateTime.now().plusMinutes(10), LocalDateTime.now(), testTeacher);
+        String validToken = "12345";
+        String validPassword = "password";
+
+        // WHEN / THEN
+        when(passwordResetTokenRepository.findByToken("12345")).thenReturn(Optional.of(expiredToken));
+        assertThrowsExactly(IllegalStateException.class, () ->{
+            authenticationService.completePasswordReset(validToken, validPassword);
+            verify(IllegalStateException.class);
+        }, "Token Expired");
+    }
+
+    @Test
+    public void completePasswordReset_InvalidToken_exception() {
+        // GIVEN
+        PasswordResetToken invalidToken = new PasswordResetToken();
+        invalidToken.setToken("12345");
+        invalidToken.setCreatedAt(LocalDateTime.now());
+        invalidToken.setExpiresAt(LocalDateTime.now().plusMinutes(1));
+        String validToken = "12345";
+        String validPassword = "password";
+
+        // WHEN / THEN
+        when(passwordResetTokenRepository.findByToken("12345")).thenReturn(Optional.of(invalidToken));
+        assertThrowsExactly(IllegalStateException.class , () -> {
+            authenticationService.completePasswordReset(validToken , validPassword);
+            verify(IllegalStateException.class);
+        } , "Token not associated with a teacher");
+    }
+
+    @Test
+    public void completePasswordReset_nullToken_exception() {
+        // GIVEN
+        String invalidToken = "12345";
+        String validPassword = "password";
+
+        // WHEN / THEN
+        assertThrowsExactly(NullPointerException.class, () ->{
+            authenticationService.completePasswordReset(invalidToken, validPassword);
+            verify(NullPointerException.class);
+        }, "Invalid token");
     }
 }
