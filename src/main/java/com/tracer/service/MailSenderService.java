@@ -32,15 +32,9 @@ public class MailSenderService {
     public void sendPasswordReset(String email) {
         PasswordResetToken passwordResetToken = generateNewPasswordResetToken(email);
         String subject = "Grader: Reset Password";
-        String resetLink = "http://localhost:8000/auth/reset-password";
         String emailContent = "<html><body>" +
-                "<p>Click the button below to reset your password:</p>" +
-                "<form method=\"post\" action=\"" + resetLink + "\">" +
-                "<input type=\"hidden\" name=\"token\" value=\"" + passwordResetToken.getToken() + "\">" +
-                "<label for=\"password\">New Password:</label>" +
-                "<input type=\"password\" id=\"password\" name=\"password\" required>" +
-                "<button type=\"submit\">Reset Password</button>" +
-                "</form>" +
+                "<p>Here is your password reset token:</p>" +
+                "<p>" + passwordResetToken.getToken() + "</p>" +
                 "</body></html>";
 
         javaMailSender.send(mimeMessage -> {
