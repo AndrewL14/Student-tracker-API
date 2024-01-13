@@ -19,7 +19,7 @@ public class TokenService {
 
     @Autowired
     private JwtDecoder jwtDecoder;
-    private static final int TOKEN_LENGTH = 100;
+    private static final int TOKEN_LENGTH = 6;
 
     public String generateJwt(Authentication auth){
         Instant now = Instant.now();
