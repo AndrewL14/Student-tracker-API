@@ -105,7 +105,7 @@ public class AuthenticationService {
         tokenToBeVerified.setVerified(true);
         emailTokenRepository.save(tokenToBeVerified);
         teacherService.saveTeacher(teacher);
-        emailTokenRepository.delete(tokenToBeVerified);
+        emailTokenRepository.deleteAllByTeacher(teacher);
 
         return "Email verified";
     }
@@ -130,7 +130,7 @@ public class AuthenticationService {
                 new UsernamePasswordAuthenticationToken(teacherToUpdate.getUsername(), password)
         );
         String jwt = tokenService.generateJwt(authentication);
-        resetTokenRepository.delete(resetToken);
+        resetTokenRepository.deleteAllByTeacher(teacherToUpdate);
         return new LoginResponse(teacherToUpdate.getUsername(), jwt);
     }
 
