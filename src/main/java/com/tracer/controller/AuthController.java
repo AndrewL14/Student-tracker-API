@@ -1,6 +1,7 @@
 package com.tracer.controller;
 
 import com.tracer.model.request.BasicLoginRequest;
+import com.tracer.model.request.CompletePasswordResetRequest;
 import com.tracer.model.request.EmailLoginRequest;
 import com.tracer.model.request.RegistrationRequest;
 import com.tracer.model.response.LoginResponse;
@@ -38,9 +39,9 @@ public class AuthController {
         );
     }
 
-    @GetMapping("/verify/email{token}")
-    public ResponseEntity<String> verifyEmail(@RequestParam String token) {
-        return new ResponseEntity<String>(authService.verifyEmail(token) , HttpStatus.OK
+    @GetMapping("/verify/email")
+    public ResponseEntity<String> verifyEmail(@RequestParam("token") String token, @RequestParam("username") String username) {
+        return new ResponseEntity<String>(authService.verifyEmail(token, username) , HttpStatus.OK
         );
     }
     @GetMapping("verify/send{email}")
@@ -49,15 +50,15 @@ public class AuthController {
         return new ResponseEntity<String>("201", HttpStatus.OK);
     }
 
-    @PostMapping("/initiate-reset{email}")
+    @GetMapping("/initiate-reset{email}")
     public void initiatePasswordReset(@RequestParam String email) {
         authService.initiatePasswordReset(email);
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<LoginResponse> completePasswordReset(@RequestParam String token, @RequestParam String password) {
+    public ResponseEntity<LoginResponse> completePasswordReset(@RequestBody CompletePasswordResetRequest request) {
         return new ResponseEntity<LoginResponse>(
-                authService.completePasswordReset(token, password), HttpStatus.OK
+                authService.completePasswordReset(request.getToken() , request.getPassword()), HttpStatus.OK
         );
     }
 }
