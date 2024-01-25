@@ -4,7 +4,6 @@ import com.tracer.model.Student;
 import com.tracer.model.Teacher;
 import com.tracer.model.request.AddStudentRequest;
 import com.tracer.model.request.EditStudentRequest;
-import com.tracer.model.request.GetStudentRequest;
 import com.tracer.repository.StudentRepository;
 import com.tracer.repository.TeacherRepository;
 import org.junit.jupiter.api.BeforeEach;

@@ -14,5 +14,6 @@ import java.util.List;
 @AllArgsConstructor
 public class LoginResponse {
     private String teacherUsername;
+    private String teacherEmail;
     private String jwt;
 }

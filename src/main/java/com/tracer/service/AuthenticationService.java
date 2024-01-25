@@ -18,6 +18,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 @Service
@@ -62,7 +63,7 @@ public class AuthenticationService {
                 new UsernamePasswordAuthenticationToken(username, password)
         );
         String token = tokenService.generateJwt(authentication);
-        return new LoginResponse(teacher.getUsername(), token);
+        return new LoginResponse(teacher.getUsername(), teacher.getEmail(), token);
     }
 
     /**
@@ -79,7 +80,7 @@ public class AuthenticationService {
         );
         String token = tokenService.generateJwt(authentication);
         Teacher teacher = (Teacher) teacherService.loadUserByUsername(username);
-        return new LoginResponse(teacher.getUsername(), token);
+        return new LoginResponse(teacher.getUsername(), teacher.getEmail(), token);
     }
 
     public LoginResponse loginUserByEmail(String email, String password) {
@@ -88,18 +89,19 @@ public class AuthenticationService {
                 new UsernamePasswordAuthenticationToken(teacher.getUsername(), password)
         );
         String token = tokenService.generateJwt(authentication);
-        return new LoginResponse(teacher.getUsername(), token);
+        return new LoginResponse(teacher.getUsername(), teacher.getEmail(), token);
     }
 
     public void sendEmailVerification(String email) {
         mailSenderService.sendEmailVerification(email);
     }
 
-    public String verifyEmail(String token) {
+    public String verifyEmail(String token, String username) {
         EmailToken tokenToBeVerified = emailTokenRepository.findByToken(token)
                 .orElseThrow(() -> new RuntimeException("Invalid token"));
         validateToken(tokenToBeVerified);
         Teacher teacher = tokenToBeVerified.getTeacher();
+        if (!Objects.equals(teacher.getUsername() , username)) throw new RuntimeException("Token does not match with given username");
         teacher.setEmailVerified(true);
         tokenToBeVerified.setVerifiedAt(LocalDateTime.now());
         tokenToBeVerified.setVerified(true);
@@ -131,7 +133,7 @@ public class AuthenticationService {
         );
         String jwt = tokenService.generateJwt(authentication);
         resetTokenRepository.deleteAllByTeacher(teacherToUpdate);
-        return new LoginResponse(teacherToUpdate.getUsername(), jwt);
+        return new LoginResponse(teacherToUpdate.getUsername(), teacherToUpdate.getEmail(), jwt);
     }
 
     private void validateToken(EmailToken token) {

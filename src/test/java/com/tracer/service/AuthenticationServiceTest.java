@@ -129,13 +129,14 @@ public class AuthenticationServiceTest {
     @Test
     public void verifyEmail_validToken_emailVerified() {
         // GIVEN
+        testTeacher.setUsername("test");
         EmailToken emailToken = new EmailToken("12345", testTeacher, LocalDateTime.now()
         ,LocalDateTime.now().plusMinutes(10));
         String validToken = "12345";
 
         // WHEN
         when(emailTokenRepository.findByToken("12345")).thenReturn(Optional.of(emailToken));
-        String response = authenticationService.verifyEmail(validToken);
+        String response = authenticationService.verifyEmail(validToken, testTeacher.getUsername());
 
         // THEN
         assertNotNull(response);
@@ -146,6 +147,7 @@ public class AuthenticationServiceTest {
     @Test
     public void verifyEmail_expiredToken_exception() {
         // GIVEN
+        testTeacher.setUsername("test");
         EmailToken expiredEmailToken = new EmailToken("12345", testTeacher, LocalDateTime.now().plusMinutes(5)
                 ,LocalDateTime.now());
         String validToken = "12345";
@@ -153,7 +155,7 @@ public class AuthenticationServiceTest {
         // WHEN / THEN
         when(emailTokenRepository.findByToken("12345")).thenReturn(Optional.of(expiredEmailToken));
         assertThrowsExactly(IllegalStateException.class, () ->{
-            authenticationService.verifyEmail(validToken);
+            authenticationService.verifyEmail(validToken, testTeacher.getUsername());
             verify(IllegalStateException.class);
         }, "Token Expired");
     }
@@ -161,6 +163,7 @@ public class AuthenticationServiceTest {
     @Test
     public void verifyEmail_InvalidToken_exception() {
         // GIVEN
+        testTeacher.setUsername("test");
         EmailToken invalidEmailToken = new EmailToken();
         invalidEmailToken.setToken("12345");
         invalidEmailToken.setCreatedAt(LocalDateTime.now());
@@ -170,7 +173,7 @@ public class AuthenticationServiceTest {
         // WHEN / THEN
         when(emailTokenRepository.findByToken("12345")).thenReturn(Optional.of(invalidEmailToken));
         assertThrowsExactly(IllegalStateException.class, () ->{
-            authenticationService.verifyEmail(validToken);
+            authenticationService.verifyEmail(validToken, testTeacher.getUsername());
             verify(IllegalStateException.class);
         }, "Token not associated with a teacher");
     }
@@ -178,6 +181,7 @@ public class AuthenticationServiceTest {
     @Test
     public void verifyEmail_emailAlreadyVerified_exception() {
         // GIVEN
+        testTeacher.setUsername("test");
         testTeacher.setEmailVerified(true);
         EmailToken alreadyVerifiedToken = new EmailToken("12345", testTeacher, LocalDateTime.now().plusMinutes(5)
                 ,LocalDateTime.now());
@@ -186,7 +190,7 @@ public class AuthenticationServiceTest {
         // WHEN / THEN
         when(emailTokenRepository.findByToken("12345")).thenReturn(Optional.of(alreadyVerifiedToken));
         assertThrowsExactly(IllegalStateException.class, () ->{
-            authenticationService.verifyEmail(validToken);
+            authenticationService.verifyEmail(validToken, testTeacher.getUsername());
             verify(IllegalStateException.class);
         }, "Email already verified");
     }
@@ -198,7 +202,7 @@ public class AuthenticationServiceTest {
 
         // WHEN / THEN
         assertThrowsExactly(RuntimeException.class, () ->{
-            authenticationService.verifyEmail(invalidToken);
+            authenticationService.verifyEmail(invalidToken, testTeacher.getUsername());
             verify(RuntimeException.class);
         }, "Invalid token");
     }
