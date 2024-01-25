@@ -48,14 +48,10 @@ public class MailSenderService {
 
     public void sendEmailVerification(String email) {
         String subject = "Grader: Verify Email";
-        String verificationLink = "http://localhost:8000/auth/verify/email?token=";
         EmailToken emailToken = generateNewEmailToken(email);
         String emailContent = "<html><body>" +
-                "<p>Click the button below to verify your email address:</p>" +
-                "<form action=\"" + verificationLink + "\">" +
-                "<input type=\"hidden\" name=\"token\" value=\"" + emailToken.getToken() + "\">" +
-                "<button type=\"submit\">Verify Email</button>" +
-                "</form>" +
+                "<p>Here is your password reset token:</p>" +
+                "<p>" + emailToken.getToken() + "</p>" +
                 "</body></html>";
 
 
