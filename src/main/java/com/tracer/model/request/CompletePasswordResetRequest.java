@@ -1,2 +1,13 @@
-package com.tracer.model.request;public class CompletePasswordResetRequest {
+package com.tracer.model.request;
+
+import lombok.*;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@ToString
+public class CompletePasswordResetRequest {
+    private String password;
+    private String token;
 }
