@@ -149,14 +149,13 @@ public class AuthenticationServiceTest {
         // GIVEN
         testTeacher.setUsername("test");
         EmailToken expiredEmailToken = new EmailToken("12345", testTeacher, LocalDateTime.now().plusMinutes(5)
-                ,LocalDateTime.now());
+                ,LocalDateTime.now().minusMinutes(5));
         String validToken = "12345";
 
         // WHEN / THEN
         when(emailTokenRepository.findByToken("12345")).thenReturn(Optional.of(expiredEmailToken));
         assertThrowsExactly(IllegalStateException.class, () ->{
             authenticationService.verifyEmail(validToken, testTeacher.getUsername());
-            verify(IllegalStateException.class);
         }, "Token Expired");
     }
 
@@ -233,7 +232,7 @@ public class AuthenticationServiceTest {
     public void completePasswordReset_expiredToken_exception() {
         // GIVEN
         PasswordResetToken expiredToken = new PasswordResetToken("12345", "example@gmail.com",
-                LocalDateTime.now().plusMinutes(10), LocalDateTime.now(), testTeacher);
+                LocalDateTime.now().plusMinutes(10), LocalDateTime.now().minusMinutes(5), testTeacher);
         String validToken = "12345";
         String validPassword = "password";
 
@@ -241,7 +240,6 @@ public class AuthenticationServiceTest {
         when(passwordResetTokenRepository.findByToken("12345")).thenReturn(Optional.of(expiredToken));
         assertThrowsExactly(IllegalStateException.class, () ->{
             authenticationService.completePasswordReset(validToken, validPassword);
-            verify(IllegalStateException.class);
         }, "Token Expired");
     }
 
