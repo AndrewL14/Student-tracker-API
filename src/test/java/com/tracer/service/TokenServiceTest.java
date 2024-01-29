@@ -37,7 +37,7 @@ public class TokenServiceTest {
     @Test
     public void generateEmailVerificationToken() {
         // GIVEN
-        int expectedTokenLength = 134;
+        int expectedTokenLength = 8;
 
         // WHEN
         String response = tokenService.generateEmailVerificationToken();
