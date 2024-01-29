@@ -31,7 +31,6 @@ To Install the application fork the repo and clone it to your local machine.
 ### Disclaimer
 This application is a 2 part repo, if you wish to run in full-stack, visit
 [Student-tracker-UI](https://github.com/AndrewL14/Student-tracker-UI)  and clone the repo, making sure to run both applications.
-CURRENTLY PASSWORD RESET unavailable due to not being implemented in the frontend. (Able to be used in the backend service or using postman. view email documentation)
 
 Currently, the UI has not been styled but the corresponding login, register, and dashboard pages
 have all been implemented. 
