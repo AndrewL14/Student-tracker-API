@@ -55,11 +55,11 @@ VALID JWT to call the other methods. And make sure the program is running.
 Replace YOUR_ACCESS_TOKEN with the JWT you get when logging in.
 ### POST Register
 ```sh 
-curl -X POST -H "Content-Type: application/json" -d '{"username": "your_username", "email": "<your_email>"  "password": "your_password"}' http://localhost:8000/auth/register
+curl -X POST -H "Content-Type: application/json" -d '{"username": "your_username", "email": "<your_email>"  "password": "your_password"}' http://localhost:5000/auth/register
 ```
 ### POST Log in
 ``` sh
-curl -X POST -H "Content-Type: application/json" -d '{"username": "james", "password": "password"}' http://localhost:8000/auth/login/basic
+curl -X POST -H "Content-Type: application/json" -d '{"username": "james", "password": "password"}' http://localhost:5000/auth/login/basic
 ```
 
 All other request are in postman. In the Auth tab select `Bearer Token` and put your JWT in.
@@ -71,7 +71,7 @@ Here is all the necessary information needed to carry out request in postman:
 ```yaml
 request:
   method: GET
-  url: http://localhost:8000/teacher/all
+  url: http://localhost:5000/teacher/all
   headers:
     Authorization: "Bearer YOUR_ACCESS_TOKEN"
 ```
@@ -79,7 +79,7 @@ request:
 ```yaml
 request_get_unique_student:
   method: GET
-  url: http://localhost:8000/teacher/unique?studentName=John
+  url: http://localhost:5000/teacher/unique?studentName=John
   headers:
     Authorization: "Bearer YOUR_ACCESS_TOKEN"
 ```
@@ -87,7 +87,7 @@ request_get_unique_student:
 ```yaml
 request_put_add_student:
   method: PUT
-  url: http://localhost:8000/teacher/add
+  url: http://localhost:5000/teacher/add
   headers:
     Authorization: "Bearer YOUR_ACCESS_TOKEN"
   body:
@@ -107,7 +107,7 @@ Request uses name and period to find the correct student.
 ```yaml
 request_post_edit_student:
   method: POST
-  url: http://localhost:8000/teacher/edit
+  url: http://localhost:5000/teacher/edit
   headers:
     Authorization: "Bearer YOUR_ACCESS_TOKEN"
   body:
@@ -128,15 +128,15 @@ request_post_edit_student:
 ```yaml
 request_delete_delete_student:
   method: DELETE
-  url: http://localhost:8000/teacher/delete
+  url: http://localhost:5000/teacher/delete
   headers:
     Authorization: "Bearer YOUR_ACCESS_TOKEN"
   body:
-    studentName: "jhon"
+    studentName: "jhon Smith"
 ```
 ```json
 {
-  "studentName": "jhon"
+  "studentName": "jhon Smith"
 }
 ```
 ## Development setup
