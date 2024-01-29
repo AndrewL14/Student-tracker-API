@@ -206,7 +206,7 @@ public class TeacherServiceTest {
         Student updatedStudent = response.get(0);
         assertEquals(1L, updatedStudent.getStudentId());
         assertEquals(1, response.size());
-        assertEquals("jhon", updatedStudent.getName(), "expected name to remain the same");
+        assertEquals("Jhon Smith", updatedStudent.getName(), "expected name to remain the same");
         assertEquals(BigDecimal.valueOf(10.0), updatedStudent.getGrade());
         assertEquals(2, updatedStudent.getPeriod(), "expected period to remain the same");
         Mockito.verify(teacherRepository, Mockito.times(1)).save(testTeacher);
