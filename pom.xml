@@ -10,7 +10,7 @@
 	</parent>
 	<groupId>com.tracer</groupId>
 	<artifactId>student-tracker-API</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>0.0.2-SNAPSHOT</version>
 	<name>student-tracker-API</name>
 	<description>Built for teachers to keep track of student grades,
 		tailored for middle school and high school teachers
