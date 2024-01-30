@@ -67,7 +67,6 @@ public class TeacherService implements UserDetailsService {
         students.add(studentToAdd);
         teacher.setStudents(students);
         teacherRepository.save(teacher);
-        studentRepository.save(studentToAdd);
         return students.parallelStream().toList();
     }
 
