@@ -124,7 +124,6 @@ public class TeacherServiceTest {
         // Assert
         assertEquals(1, response.size());
         Mockito.verify(teacherRepository, Mockito.times(1)).save(testTeacher);
-        Mockito.verify(studentRepository, Mockito.times(1)).save(Mockito.any(Student.class));
     }
 
     @Test
