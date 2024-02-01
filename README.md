@@ -12,11 +12,19 @@ Grading API For Teachers
 
 </div>
 
+## If you're part of a hiring team looking over this project.
+Since this project is used solely to showcase my knowledge and skills. I will be providing an HTTP endpoint link to my fully deployed API Running on AWS EBS.
+I will say in an actual production code, this endpoint would be stored in an env file away from public eyes. `Studenttracker-env.eba-xwqympus.us-west-2.elasticbeanstalk.com `.
+
+## How to use.
+Simply go to Postman or any other API tester and replace `localhost` with the AWS endpoint. (view sample request below)
+
 ## Description
 
 This project is 1/2 of a student tracker Web Application, responsible for tracking, and maintaining 
 Student grades for teachers. This part is the backend Service, Using Spring boot, spring security, Auth02,
 JWT, RSA, H2, AWS RDS, And PostgreSQL.
+
 
 ## Installation
 
@@ -29,16 +37,12 @@ JWT, RSA, H2, AWS RDS, And PostgreSQL.
 To Install the application fork the repo and clone it to your local machine.
 
 ### Disclaimer
-This application is a 2 part repo, if you wish to run in full-stack, visit
-[Student-tracker-UI](https://github.com/AndrewL14/Student-tracker-UI)  and clone the repo, making sure to run both applications.
-
-Currently, the UI has not been styled but the corresponding login, register, and dashboard pages
-have all been implemented. 
+`UI in development`
 
 Note: If running in dev mode the data will not be stored across runtimes as the project uses an H2 database
-Configuration for testing and dev work. During a future update this project will be deployed using AWS and Render.
+Configuration for testing and dev work. During a future update, this project will be deployed using AWS and Render.
 
-If you wish to deploy this project for your self, create an application-prod.properties file and 
+If you wish to deploy this project for yourself, create an application-prod.properties file and 
 Configure accordingly
 
 ### Documentation
@@ -51,21 +55,34 @@ for information involving the new mailing system and request go to [Email System
 The way the project is set up you will need to log in before calling any methods, as you will need a 
 VALID JWT to call the other methods. And make sure the program is running. 
 
-Replace YOUR_ACCESS_TOKEN with the JWT you get when logging in.
+Replace YOUR_ACCESS_TOKEN with the JWT you get when logging in. When using Postman put the JWT in authorization -> type -> bearer token.
 ### POST Register
 ```sh 
 curl -X POST -H "Content-Type: application/json" -d '{"username": "your_username", "email": "<your_email>"  "password": "your_password"}' http://localhost:5000/auth/register
+```
+```json
+{
+  "username": "example",
+  "email": "email",
+  "password": "password"
+}
 ```
 ### POST Log in
 ``` sh
 curl -X POST -H "Content-Type: application/json" -d '{"username": "james", "password": "password"}' http://localhost:5000/auth/login/basic
 ```
+```json
+{
+  "username": "james",
+  "password": "password"
+}
+```
 
-All other request are in postman. In the Auth tab select `Bearer Token` and put your JWT in.
-request files are formatted in `.yaml` to show what is needed, for request requiring a body, a
+All other requests are in Postman. In the Auth tab select `Bearer Token` and put your JWT in.
+request files are formatted in `.yaml` to show what is needed, for requests requiring a body, a
 corresponding `.json` format has been provided for quick copy and paste.
 
-Here is all the necessary information needed to carry out request in postman:
+Here is all the necessary information needed to carry out requests in Postman:
 ### GET all students
 ```yaml
 request:
@@ -78,7 +95,7 @@ request:
 ```yaml
 request_get_unique_student:
   method: GET
-  url: http://localhost:5000/teacher/unique?studentName=John
+  url: http://localhost:5000/teacher/unique?studentName=John%20Smith
   headers:
     Authorization: "Bearer YOUR_ACCESS_TOKEN"
 ```
