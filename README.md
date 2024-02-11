@@ -18,6 +18,7 @@ I will say in an actual production code, this endpoint would be stored in an env
 
 ## How to use.
 Simply go to Postman or any other API tester and replace `localhost` with the AWS endpoint. (view sample request below)
+[![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/94e5460c770f01bda6ce#?env%5BDEV%5D=W3sia2V5IjoiYmFzZV91cmwiLCJ2YWx1ZSI6Imh0dHA6Ly9sb2NhbGhvc3Q6NDUwMCIsImVuYWJsZWQiOnRydWV9LHsia2V5IjoiaW5zaWRlcl9iYXNlX3VybCIsInZhbHVlIjoiaHR0cDovL2xvY2FsaG9zdDo5MDAwIiwiZW5hYmxlZCI6dHJ1ZX0seyJrZXkiOiJwdF9iYXNlX3VybCIsInZhbHVlIjoiaHR0cDovL2xvY2FsaG9zdDo1MDAwIiwiZW5hYmxlZCI6dHJ1ZX1d)
 
 ## Description
 
@@ -55,7 +56,10 @@ for information involving the new mailing system and request go to [Email System
 The way the project is set up you will need to log in before calling any methods, as you will need a 
 VALID JWT to call the other methods. And make sure the program is running. 
 
-Replace YOUR_ACCESS_TOKEN with the JWT you get when logging in. When using Postman put the JWT in authorization -> type -> bearer token.
+Replace YOUR_ACCESS_TOKEN with the JWT you get when logging in. 
+When using Postman put the JWT in authorization -> type -> bearer token. For any request that need it.
+![example 1](documentation/example-1.png)
+![example 2](documentation/example-2.png)
 ### POST Register
 ```sh 
 curl -X POST -H "Content-Type: application/json" -d '{"username": "your_username", "email": "<your_email>"  "password": "your_password"}' http://localhost:5000/auth/register

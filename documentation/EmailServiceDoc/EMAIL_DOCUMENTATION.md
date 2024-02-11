@@ -76,5 +76,11 @@ request_put_add_student:
   url: http://localhost:8000/auth/reset-password
   body:
     token: "<your_token>"
-    password: "password"
+    password: "<new_password>"
+```
+```json
+{
+  "token": "<your_token>",
+  "password": "<new_password>"
+}
 ```
