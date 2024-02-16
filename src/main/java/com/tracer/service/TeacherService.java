@@ -15,6 +15,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,6 +26,8 @@ public class TeacherService implements UserDetailsService {
     private TeacherRepository teacherRepository;
     @Autowired
     private StudentRepository studentRepository;
+    @Autowired
+    private Logger logger;
 
     /**
      * Uses the teachers unique username to find the list of corresponding students.
@@ -31,6 +35,7 @@ public class TeacherService implements UserDetailsService {
      * @return a list of students matching the teacher.
      */
     public List<Student> getAllStudentsByTeacherUsername(String username) {
+        logger.logp(Level.parse("INFO") , "TeacherService", "getAllStudentsByTeacherUsername", String.format("Getting all students associated with teacher: %s", username));
         Teacher teacher = teacherRepository.findByUsername(username)
                 .orElseThrow(NullPointerException::new);
 
@@ -45,6 +50,7 @@ public class TeacherService implements UserDetailsService {
      * @return A list of students matching studentName
      */
     public List<Student> getStudentsByName(String teacherUsername, String studentName) {
+        logger.logp(Level.parse("INFO") , "TeacherService", "getStudentsByName", String.format("Getting student with name %s associated with %s.", studentName, teacherUsername));
         Teacher teacher = teacherRepository.findByUsername(teacherUsername)
                 .orElseThrow(NullPointerException::new);
 
@@ -59,6 +65,7 @@ public class TeacherService implements UserDetailsService {
      * @return An updated list of students
      */
     public List<Student> addStudent(AddStudentRequest request, String teacherUsername) {
+        logger.info(String.format("beginning add student process for: %s.", teacherUsername));
         Teacher teacher = teacherRepository.findByUsername(teacherUsername)
                 .orElseThrow(NullPointerException::new);
         Student studentToAdd = new Student(request.getName() , request.getPeriod(), request.getGrade());
@@ -78,7 +85,7 @@ public class TeacherService implements UserDetailsService {
     public List<Student> editExistingStudent(EditStudentRequest request, String teacherUsername) {
         Teacher teacher = teacherRepository.findByUsername(teacherUsername)
                 .orElseThrow(() -> new IllegalArgumentException("Teacher not found"));
-
+        logger.info(String.format("editing student with id: %d.", request.getStudentId()));
         List<Student> updatedStudents = teacher.getStudents().parallelStream()
                 .peek(student -> {
                     if (student.getStudentId().equals(request.getStudentId())) {
@@ -109,6 +116,7 @@ public class TeacherService implements UserDetailsService {
     public void deleteStudent(Long studentId, String teacherUsername) {
         Teacher teacher = teacherRepository.findByUsername(teacherUsername)
                 .orElseThrow(NullPointerException::new);
+        logger.info(String.format("deleting student with id: %d.", studentId));
         Optional<Student> studentToDelete = teacher.getStudents().parallelStream()
                         .filter(student -> student.getStudentId().equals(studentId))
                                 .findFirst();
@@ -128,16 +136,19 @@ public class TeacherService implements UserDetailsService {
      */
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
+        logger.info(String.format("finding teacher with username: %s.", username));
         Optional<Teacher> teacherOpt = teacherRepository.findByUsername(username);
         return teacherOpt.orElseThrow(() -> new UsernameNotFoundException("Invalid Credentials"));
     }
 
     public UserDetails loadUserByEmail(String email) throws UsernameNotFoundException {
+        logger.info(String.format("finding teacher with email: %s", email));
         Optional<Teacher> teacherOpt = teacherRepository.findByEmail(email);
         return teacherOpt.orElseThrow(() -> new UsernameNotFoundException("Invalid Credentials"));
     }
 
     public UserDetails saveNewTeacher(Teacher teacher) {
+        logger.info("Saving new teacher.");
         return teacherRepository.save(teacher);
     }
 }

@@ -13,6 +13,7 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.logging.Logger;
 
 @Service
 public class MailSenderService {
@@ -26,6 +27,8 @@ public class MailSenderService {
     private TokenService tokenService;
     @Autowired
     private JavaMailSender javaMailSender;
+    @Autowired
+    private Logger logger;
     @Value("${spring.mail.username}")
     private String senderEmail;
 
@@ -36,7 +39,7 @@ public class MailSenderService {
                 "<p>Here is your password reset token:</p>" +
                 "<p>" + passwordResetToken.getToken() + "</p>" +
                 "</body></html>";
-
+        logger.info("sending password reset email");
         javaMailSender.send(mimeMessage -> {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
             helper.setTo(email);
@@ -44,6 +47,7 @@ public class MailSenderService {
             helper.setText(emailContent, true);
             helper.setFrom(senderEmail);
         });
+        logger.info("successfully sent password reset email");
     }
 
     public void sendEmailVerification(String email) {
@@ -54,7 +58,7 @@ public class MailSenderService {
                 "<p>" + emailToken.getToken() + "</p>" +
                 "</body></html>";
 
-
+        logger.info("sending email verification email");
         javaMailSender.send(mimeMessage -> {
             MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true);
             helper.setTo(email);
@@ -62,9 +66,11 @@ public class MailSenderService {
             helper.setText(emailContent, true);
             helper.setFrom(senderEmail);
         });
+        logger.info("successfully sent email verification email");
     }
 
     public PasswordResetToken generateNewPasswordResetToken(String email) {
+        logger.info(String.format("Creating new password reset token for %s", email));
         Teacher teacher = teacherRepository.findByEmail(email)
                 .orElseThrow(NullPointerException::new);
         String token = tokenService.generateEmailVerificationToken();
@@ -77,6 +83,7 @@ public class MailSenderService {
     }
 
     public EmailToken generateNewEmailToken(String email) {
+        logger.info(String.format("Creating new email token for %s", email));
         Teacher teacher =  teacherRepository.findByEmail(email)
                 .orElseThrow(NullPointerException::new);
         String token = tokenService.generateEmailVerificationToken();
