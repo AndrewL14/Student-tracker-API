@@ -1,5 +1,7 @@
 package com.tracer.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -9,7 +11,6 @@ import org.springframework.stereotype.Service;
 import java.security.SecureRandom;
 import java.time.Instant;
 import java.util.Base64;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,8 +21,7 @@ public class TokenService {
 
     @Autowired
     private JwtDecoder jwtDecoder;
-    @Autowired
-    private Logger logger;
+    private final Logger logger = LoggerFactory.getLogger(TokenService.class);
     private static final int TOKEN_LENGTH = 6;
 
     public String generateJwt(Authentication auth){

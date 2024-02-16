@@ -6,6 +6,8 @@ import com.tracer.model.request.AddStudentRequest;
 import com.tracer.model.request.EditStudentRequest;
 import com.tracer.repository.StudentRepository;
 import com.tracer.repository.TeacherRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -15,8 +17,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.*;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
 @Service
@@ -26,8 +26,7 @@ public class TeacherService implements UserDetailsService {
     private TeacherRepository teacherRepository;
     @Autowired
     private StudentRepository studentRepository;
-    @Autowired
-    private Logger logger;
+    private final Logger logger = LoggerFactory.getLogger(TeacherService.class);
 
     /**
      * Uses the teachers unique username to find the list of corresponding students.
@@ -35,7 +34,7 @@ public class TeacherService implements UserDetailsService {
      * @return a list of students matching the teacher.
      */
     public List<Student> getAllStudentsByTeacherUsername(String username) {
-        logger.logp(Level.parse("INFO") , "TeacherService", "getAllStudentsByTeacherUsername", String.format("Getting all students associated with teacher: %s", username));
+        logger.info(String.format("Getting all students associated with teacher: %s", username));
         Teacher teacher = teacherRepository.findByUsername(username)
                 .orElseThrow(NullPointerException::new);
 
@@ -50,7 +49,7 @@ public class TeacherService implements UserDetailsService {
      * @return A list of students matching studentName
      */
     public List<Student> getStudentsByName(String teacherUsername, String studentName) {
-        logger.logp(Level.parse("INFO") , "TeacherService", "getStudentsByName", String.format("Getting student with name %s associated with %s.", studentName, teacherUsername));
+        logger.info(String.format("Getting student with name %s associated with %s.", studentName, teacherUsername));
         Teacher teacher = teacherRepository.findByUsername(teacherUsername)
                 .orElseThrow(NullPointerException::new);
 

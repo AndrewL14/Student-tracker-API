@@ -8,6 +8,8 @@ import com.tracer.model.response.LoginResponse;
 import com.tracer.repository.AuthorityRepository;
 import com.tracer.repository.EmailTokenRepository;
 import com.tracer.repository.PasswordResetTokenRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,7 +22,6 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
-import java.util.logging.Logger;
 
 @Service
 @Transactional
@@ -41,8 +42,7 @@ public class AuthenticationService {
     private MailSenderService mailSenderService;
     @Autowired
     private TokenService tokenService;
-    @Autowired
-    private Logger logger;
+    private final Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
 
     /**
      * Creates and saves a new teacher object using the provided username and password.

@@ -6,6 +6,8 @@ import com.tracer.model.Teacher;
 import com.tracer.repository.EmailTokenRepository;
 import com.tracer.repository.PasswordResetTokenRepository;
 import com.tracer.repository.TeacherRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
@@ -13,7 +15,6 @@ import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.logging.Logger;
 
 @Service
 public class MailSenderService {
@@ -27,8 +28,7 @@ public class MailSenderService {
     private TokenService tokenService;
     @Autowired
     private JavaMailSender javaMailSender;
-    @Autowired
-    private Logger logger;
+    private final Logger logger = LoggerFactory.getLogger(MailSenderService.class);
     @Value("${spring.mail.username}")
     private String senderEmail;
 
