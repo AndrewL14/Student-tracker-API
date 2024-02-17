@@ -1,5 +1,7 @@
 package com.tracer.service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -19,9 +21,11 @@ public class TokenService {
 
     @Autowired
     private JwtDecoder jwtDecoder;
+    private final Logger logger = LoggerFactory.getLogger(TokenService.class);
     private static final int TOKEN_LENGTH = 6;
 
     public String generateJwt(Authentication auth){
+        logger.info("beginning creation of JWT");
         Instant now = Instant.now();
 
         String scope = auth.getAuthorities().stream()
@@ -39,6 +43,7 @@ public class TokenService {
         return jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
     }
     public String generateEmailVerificationToken() {
+        logger.info("beginning creation of email token");
         byte[] randomBytes = new byte[TOKEN_LENGTH];
         new SecureRandom().nextBytes(randomBytes);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);

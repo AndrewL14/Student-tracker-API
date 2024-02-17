@@ -8,6 +8,8 @@ import com.tracer.model.response.LoginResponse;
 import com.tracer.repository.AuthorityRepository;
 import com.tracer.repository.EmailTokenRepository;
 import com.tracer.repository.PasswordResetTokenRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -40,6 +42,7 @@ public class AuthenticationService {
     private MailSenderService mailSenderService;
     @Autowired
     private TokenService tokenService;
+    private final Logger logger = LoggerFactory.getLogger(AuthenticationService.class);
 
     /**
      * Creates and saves a new teacher object using the provided username and password.
@@ -48,7 +51,7 @@ public class AuthenticationService {
      * @return A loginResponse containing a new List of students, and a valid JWT.
      */
     public LoginResponse registerUser(String username, String email, String password){
-
+        logger.info(String.format("Registering new user with username: %s", username));
         String encodedPassword = passwordEncoder.encode(password);
         Role userRole = roleRepository.findByAuthority("TEACHER").get();
 
@@ -74,7 +77,7 @@ public class AuthenticationService {
      * @return A loginResponse containing a new List of students, and a valid JWT.
      */
     public LoginResponse loginUserByUsername(String username, String password){
-
+        logger.info(String.format("logging in user with username: %s", username));
         Authentication authentication = authenticationManager.authenticate(
                    new UsernamePasswordAuthenticationToken(username, password)
         );
@@ -84,6 +87,7 @@ public class AuthenticationService {
     }
 
     public LoginResponse loginUserByEmail(String email, String password) {
+        logger.info(String.format("logging in user with email: %s", email));
         Teacher teacher = (Teacher) teacherService.loadUserByEmail(email);
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(teacher.getUsername(), password)
@@ -93,10 +97,12 @@ public class AuthenticationService {
     }
 
     public void sendEmailVerification(String email) {
+        logger.info(String.format("beginning email verification process for email: %s", email));
         mailSenderService.sendEmailVerification(email);
     }
 
     public String verifyEmail(String token, String username) {
+        logger.info(String.format("beginning user verification process for user: %s", username));
         EmailToken tokenToBeVerified = emailTokenRepository.findByToken(token)
                 .orElseThrow(() -> new RuntimeException("Invalid token"));
         validateToken(tokenToBeVerified);
@@ -113,11 +119,13 @@ public class AuthenticationService {
     }
 
     public void initiatePasswordReset(String email) {
+        logger.info(String.format("beginning password reset process for email: %s", email));
         teacherService.loadUserByEmail(email);
         mailSenderService.sendPasswordReset(email);
     }
 
     public LoginResponse completePasswordReset(String token, String password) {
+        logger.info("completing password reset process");
         PasswordResetToken resetToken = resetTokenRepository.findByToken(token)
                 .orElseThrow(NullPointerException::new);
         String encodedPassword = passwordEncoder.encode(password);
