@@ -16,7 +16,8 @@ Grading API For Teachers
 
 This project is 1/2 of a student tracker Web Application, responsible for tracking, and maintaining 
 Student grades for teachers. This part is the backend Service, Using Spring boot, spring security, Auth02,
-JWT, RSA, H2, AWS RDS, And PostgreSQL.
+JWT, RSA, H2, AWS RDS, And PostgreSQL. [Link to client-side code](https://github.com/AndrewL14/Student-tracker-UI) 
+This would give you a static website for easy showcasing.
 
 
 ## Installation
