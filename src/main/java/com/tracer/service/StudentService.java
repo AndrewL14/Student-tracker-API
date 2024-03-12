@@ -1,4 +1,4 @@
-package com.tracer.model.service;
+package com.tracer.service;
 
 import com.tracer.model.Student;
 import com.tracer.model.assignments.Assignment;
@@ -66,13 +66,16 @@ public class StudentService {
                 .orElseThrow(NullPointerException::new);
         List<Assignment> assignmentsToUpdate = student.getAssignments().stream()
                 .peek(assignment -> {
-                    if (Objects.equals(assignment.getAssignmentId() , request.getAssignmentId())) {
+                    if (assignment.getAssignmentId().equals(request.getAssignmentId())) {
                         if (!request.getAssignmentNameToChange().isEmpty())
                             assignment.setAssignmentName(request.getAssignmentNameToChange());
-                        request.getGradeToChange().ifPresent(assignment::setGrade);
-                        request.getDueDateToChange().ifPresent(assignment::setDueDate);
+                        request.getGradeToChange().ifPresent(grade -> {assignment.setGrade(grade);});
+                        request.getDueDateToChange().ifPresent(date -> {assignment.setDueDate(date);});
                         if (!request.getAssignmentNameToChange().isEmpty())
                             assignment.setAssignmentName(request.getAssignmentNameToChange());
+                        if (!request.getAssignmentTypeToChange().isEmpty()) {
+                            assignment.setAssignmentType(request.getAssignmentTypeToChange());
+                        }
                         assignmentRepository.save(assignment);
                     }
                 }).toList();
