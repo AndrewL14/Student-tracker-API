@@ -1,4 +1,4 @@
-package com.tracer.model.request;
+package com.tracer.model.request.student;
 
 import lombok.*;
 

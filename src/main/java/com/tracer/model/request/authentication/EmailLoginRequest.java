@@ -1,4 +1,4 @@
-package com.tracer.model.request;
+package com.tracer.model.request.authentication;
 
 import lombok.*;
 
