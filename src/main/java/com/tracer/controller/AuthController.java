@@ -1,12 +1,11 @@
 package com.tracer.controller;
 
-import com.tracer.model.request.BasicLoginRequest;
-import com.tracer.model.request.CompletePasswordResetRequest;
-import com.tracer.model.request.EmailLoginRequest;
-import com.tracer.model.request.RegistrationRequest;
+import com.tracer.model.request.authentication.BasicLoginRequest;
+import com.tracer.model.request.authentication.CompletePasswordResetRequest;
+import com.tracer.model.request.authentication.EmailLoginRequest;
+import com.tracer.model.request.authentication.RegistrationRequest;
 import com.tracer.model.response.LoginResponse;
 import com.tracer.service.AuthenticationService;
-import org.apache.coyote.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
