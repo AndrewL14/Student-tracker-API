@@ -1,4 +1,4 @@
-package com.tracer.model.request;
+package com.tracer.model.request.assignment;
 
 import lombok.*;
 
@@ -12,7 +12,7 @@ import java.util.Optional;
 @ToString
 public class EditAssignmentRequest {
     private Long studentId;
-    private Long AssignmentId;
+    private Long assignmentId;
     private String assignmentNameToChange = "";
     private Optional<Double> gradeToChange = Optional.empty();
     private Optional<LocalDate> dueDateToChange = Optional.empty();

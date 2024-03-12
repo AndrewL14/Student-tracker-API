@@ -1,5 +1,6 @@
-package com.tracer.model.request;
+package com.tracer.model.request.assignment;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.*;
 
 import java.time.LocalDate;
@@ -13,6 +14,7 @@ public class AddAssignmentRequest {
     private String assignmentName;
     private double grade;
     private boolean completed;
+    @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate dueDate;
     private String assignmentType;
 }

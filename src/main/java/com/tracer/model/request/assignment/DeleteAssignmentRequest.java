@@ -1,4 +1,4 @@
-package com.tracer.model.request;
+package com.tracer.model.request.assignment;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -11,5 +11,5 @@ import lombok.Setter;
 @AllArgsConstructor
 public class DeleteAssignmentRequest {
     private Long studentId;
-    private Long AssignmentId;
+    private Long assignmentId;
 }
