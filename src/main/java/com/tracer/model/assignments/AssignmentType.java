@@ -1,2 +1,8 @@
-package com.tracer.model.assignments;public enum AssignmentType {
+package com.tracer.model.assignments;
+
+public enum AssignmentType {
+    ASSIGNMENT,
+    QUIZ,
+    TEST,
+    PROJECT
 }
