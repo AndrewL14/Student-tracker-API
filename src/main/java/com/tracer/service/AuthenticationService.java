@@ -1,4 +1,4 @@
-package com.tracer.model.service;
+package com.tracer.service;
 
 import com.tracer.model.EmailToken;
 import com.tracer.model.PasswordResetToken;
