@@ -1,9 +1,9 @@
-package com.tracer.service;
+package com.tracer.model.service;
 
 import com.tracer.model.Student;
 import com.tracer.model.Teacher;
-import com.tracer.model.request.AddStudentRequest;
-import com.tracer.model.request.EditStudentRequest;
+import com.tracer.model.request.student.AddStudentRequest;
+import com.tracer.model.request.student.EditStudentRequest;
 import com.tracer.repository.StudentRepository;
 import com.tracer.repository.TeacherRepository;
 import org.slf4j.Logger;

@@ -1,4 +1,4 @@
-package com.tracer.service;
+package com.tracer.model.service;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
