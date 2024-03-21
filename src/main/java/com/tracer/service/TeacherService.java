@@ -2,8 +2,8 @@ package com.tracer.service;
 
 import com.tracer.model.Student;
 import com.tracer.model.Teacher;
-import com.tracer.model.request.AddStudentRequest;
-import com.tracer.model.request.EditStudentRequest;
+import com.tracer.model.request.student.AddStudentRequest;
+import com.tracer.model.request.student.EditStudentRequest;
 import com.tracer.repository.StudentRepository;
 import com.tracer.repository.TeacherRepository;
 import org.slf4j.Logger;
@@ -67,7 +67,7 @@ public class TeacherService implements UserDetailsService {
         logger.info(String.format("beginning add student process for: %s.", teacherUsername));
         Teacher teacher = teacherRepository.findByUsername(teacherUsername)
                 .orElseThrow(NullPointerException::new);
-        Student studentToAdd = new Student(request.getName() , request.getPeriod(), request.getGrade());
+        Student studentToAdd = new Student(request.getName() , request.getPeriod(), BigDecimal.valueOf(100));
         Set<Student> students = teacher.getStudents();
         if (students.contains(studentToAdd)) throw new RuntimeException("Student Already Exist");
         students.add(studentToAdd);
@@ -88,7 +88,6 @@ public class TeacherService implements UserDetailsService {
         List<Student> updatedStudents = teacher.getStudents().parallelStream()
                 .peek(student -> {
                     if (student.getStudentId().equals(request.getStudentId())) {
-                        request.getGradeToChange().ifPresent(grade -> student.setGrade(BigDecimal.valueOf(grade)));
                         if (!request.getNameToChange().isEmpty()) {
                             student.setName(request.getNameToChange());
                         }

@@ -1,4 +1,4 @@
-package com.tracer.model.request;
+package com.tracer.model.request.authentication;
 
 import lombok.*;
 
@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class CompletePasswordResetRequest {
+public class BasicLoginRequest {
+    private String username;
     private String password;
-    private String token;
 }

@@ -1,4 +1,4 @@
-package com.tracer.model.request;
+package com.tracer.model.request.authentication;
 
 import lombok.*;
 
@@ -7,7 +7,8 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
-public class BasicLoginRequest {
+public class RegistrationRequest {
     private String username;
+    private String email;
     private String password;
 }

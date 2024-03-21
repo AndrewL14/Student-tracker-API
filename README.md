@@ -12,12 +12,17 @@ Grading API For Teachers
 
 </div>
 
+## If you're part of a hiring team looking over this project.
+I've taken the liberty of creating a short 5-minute loom video quickly going over all main points in my project and showcasing how it works
+using the Demo UI. you can view it [here](https://www.loom.com/share/7de74c5d28154b4183acc75816a6b2ff?sid=24a317bb-af7a-41fb-b20a-4ae3b0a45b24).
+If you wish to test the program out your self here is a neat tool that can send and receive HTTP request and responses.
+[![Run in Postman](https://run.pstmn.io/button.svg)](https://app.getpostman.com/run-collection/94e5460c770f01bda6ce#?env%5BDEV%5D=W3sia2V5IjoiYmFzZV91cmwiLCJ2YWx1ZSI6Imh0dHA6Ly9sb2NhbGhvc3Q6NDUwMCIsImVuYWJsZWQiOnRydWV9LHsia2V5IjoiaW5zaWRlcl9iYXNlX3VybCIsInZhbHVlIjoiaHR0cDovL2xvY2FsaG9zdDo5MDAwIiwiZW5hYmxlZCI6dHJ1ZX0seyJrZXkiOiJwdF9iYXNlX3VybCIsInZhbHVlIjoiaHR0cDovL2xvY2FsaG9zdDo1MDAwIiwiZW5hYmxlZCI6dHJ1ZX1d)
+
 ## Description
 
-This project is 1/2 of a student tracker Web Application, responsible for tracking, and maintaining 
-Student grades for teachers. This part is the backend Service, Using Spring boot, spring security, Auth02,
-JWT, RSA, H2, AWS RDS, And PostgreSQL. [Link to client-side code](https://github.com/AndrewL14/Student-tracker-UI) 
-This would give you a static website for easy showcasing.
+This project was made for High school and Middle School teachers to keep track of student grades and do repetitive task automatically.
+Using Spring boot, spring security, Auth02, JWT, RSA, H2, AWS RDS, And PostgreSQL. I've also created a DEMO UI to showcase my backend project
+you can view the UI [here](https://github.com/AndrewL14/Student-tracker-UI).
 
 
 ## Installation
@@ -118,7 +123,6 @@ request_put_add_student:
 }
 ```
 ### POST edit student
-Request uses name and period to find the correct student.
 ```yaml
 request_post_edit_student:
   method: POST
@@ -129,14 +133,12 @@ request_post_edit_student:
     studentId: 1
     periodToChange: 2
     nameToChange: colin
-    gradeToChange: 75
 ```
 ```json
 {
    "studentId": 1,
    "periodToChange": 2,
-   "nameToChange": "colin",
-   "gradeToChange": 75.6
+   "nameToChange": "colin"
 }
 ```
 ### DELETE student

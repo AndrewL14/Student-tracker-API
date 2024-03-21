@@ -54,7 +54,7 @@ public class MailSenderService {
         String subject = "Grader: Verify Email";
         EmailToken emailToken = generateNewEmailToken(email);
         String emailContent = "<html><body>" +
-                "<p>Here is your password reset token:</p>" +
+                "<p>Here is your email verification token:</p>" +
                 "<p>" + emailToken.getToken() + "</p>" +
                 "</body></html>";
 

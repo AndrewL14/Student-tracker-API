@@ -1,5 +1,6 @@
 package com.tracer.configure;
 
+import com.tracer.constant.Authority;
 import com.tracer.util.RSAKeyProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -54,10 +55,13 @@ public class SecurityConfiguration {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
         http
+                .cors()
+                .and()
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> {
                     auth.requestMatchers("/auth/**").permitAll();
-                    auth.requestMatchers("/teacher/**").permitAll();
+                    auth.requestMatchers("/teacher/**").hasAnyRole("TEACHER", "ADMIN");
+                    auth.requestMatchers("/student/**").hasAnyRole("TEACHER", "ADMIN", "STUDENT");
                     auth.anyRequest().authenticated();
                 });
 
