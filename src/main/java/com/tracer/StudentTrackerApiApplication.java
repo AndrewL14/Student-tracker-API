@@ -41,11 +41,11 @@ public class StudentTrackerApiApplication {
 			Set<Role> authorities = new HashSet<>();
 			authorities.add(role);
 
-			Assignment assignment = new Assignment("test", 100.0,
-					false, true, LocalDate.now(), AssignmentType.ASSIGNMENT.toString());
+			Assignment assignment = new Assignment("Adding and subtracting", 100.0,
+					true, false, LocalDate.now(), AssignmentType.ASSIGNMENT.toString());
 			Student student = new Student();
 			student.setName("Jhon Smith");
-			student.setGrade(BigDecimal.valueOf(1));
+			student.setGrade(BigDecimal.valueOf(100));
 			student.setAssignments(List.of(assignment));
 			student.setPeriod(1);
 
