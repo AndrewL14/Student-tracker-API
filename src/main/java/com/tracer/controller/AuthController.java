@@ -9,6 +9,7 @@ import com.tracer.service.AuthenticationService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -39,8 +40,8 @@ public class AuthController {
     }
 
     @GetMapping("/verify/email")
-    public ResponseEntity<String> verifyEmail(@RequestParam("token") String token, @RequestParam("username") String username) {
-        return new ResponseEntity<String>(authService.verifyEmail(token, username) , HttpStatus.OK
+    public ResponseEntity<String> verifyEmail(@RequestParam("token") String token, Authentication authentication) {
+        return new ResponseEntity<String>(authService.verifyEmail(token, authentication.getName()) , HttpStatus.OK
         );
     }
     @GetMapping("verify/send{email}")
