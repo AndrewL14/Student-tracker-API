@@ -21,6 +21,11 @@ public class StudentService {
     @Autowired
     private AssignmentRepository assignmentRepository;
 
+    public Student getStudentById(Long id) {
+        return studentRepository.findById(id)
+                .orElseThrow(NullPointerException::new);
+    }
+
     public List<Assignment> getAllAssignmentsByStudentId(Long id) {
         return studentRepository
                 .findById(id)
@@ -39,7 +44,7 @@ public class StudentService {
                 request.isCompleted(),
                 false,
                 request.getDueDate(),
-                request.getAssignmentType()))
+                request.getAssignmentType().toUpperCase()))
         );
         student.setAssignments(assignmentsToUpdate);
         student.setGrade(BigDecimal.valueOf(updateAverageGrade(assignmentsToUpdate)));
@@ -51,7 +56,7 @@ public class StudentService {
         Student student = studentRepository.findById(studentId)
                 .orElseThrow(NullPointerException::new);
         student.getAssignments().stream()
-                .filter(a -> Objects.equals(a.getAssignmentId() , assignmentId))
+                .filter(a -> Objects.equals(a.getId() , assignmentId))
                 .findFirst()
                 .ifPresent(assignment -> {
                     assignment.setCompleted(true);
@@ -66,13 +71,11 @@ public class StudentService {
                 .orElseThrow(NullPointerException::new);
         List<Assignment> assignmentsToUpdate = student.getAssignments().stream()
                 .peek(assignment -> {
-                    if (assignment.getAssignmentId().equals(request.getAssignmentId())) {
+                    if (assignment.getId().equals(request.getAssignmentId())) {
                         if (!request.getAssignmentNameToChange().isEmpty())
-                            assignment.setAssignmentName(request.getAssignmentNameToChange());
+                            assignment.setName(request.getAssignmentNameToChange());
                         request.getGradeToChange().ifPresent(grade -> {assignment.setGrade(grade);});
                         request.getDueDateToChange().ifPresent(date -> {assignment.setDueDate(date);});
-                        if (!request.getAssignmentNameToChange().isEmpty())
-                            assignment.setAssignmentName(request.getAssignmentNameToChange());
                         if (!request.getAssignmentTypeToChange().isEmpty()) {
                             assignment.setAssignmentType(request.getAssignmentTypeToChange());
                         }
@@ -88,9 +91,10 @@ public class StudentService {
         Student student = studentRepository.findById(request.getStudentId())
                 .orElseThrow(NullPointerException::new);
         List<Assignment> assignments = student.getAssignments();
-        assignments.removeIf(assignment -> Objects.equals(assignment.getAssignmentId() , request.getAssignmentId()));
+        assignments.removeIf(assignment -> Objects.equals(assignment.getId() , request.getAssignmentId()));
         assignmentRepository.deleteById(request.getAssignmentId());
         student.setAssignments(assignments);
+        student.setGrade(BigDecimal.valueOf(updateAverageGrade(assignments)));
         studentRepository.save(student);
         return assignments;
     }
