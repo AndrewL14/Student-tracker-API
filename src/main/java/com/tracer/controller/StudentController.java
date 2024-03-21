@@ -1,5 +1,6 @@
 package com.tracer.controller;
 
+import com.tracer.model.Student;
 import com.tracer.model.assignments.Assignment;
 import com.tracer.model.request.assignment.AddAssignmentRequest;
 import com.tracer.model.request.assignment.DeleteAssignmentRequest;
@@ -9,7 +10,6 @@ import com.tracer.service.StudentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -21,6 +21,10 @@ public class StudentController {
     @Autowired
     private StudentService service;
 
+    @GetMapping("/get-student{id}")
+    public ResponseEntity<Student> getStudentById(@RequestParam Long id) {
+        return new ResponseEntity<Student>(service.getStudentById(id), HttpStatus.OK);
+    }
     @GetMapping("/get-all{id}")
     public ResponseEntity<List<Assignment>> getAllAssignmentsByStudentId(@RequestParam Long id) {
         return new ResponseEntity<List<Assignment>>(
