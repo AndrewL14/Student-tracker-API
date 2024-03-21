@@ -17,17 +17,17 @@ public class Assignment {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "assignment_id")
-    private Long assignmentId;
-    private String assignmentName;
+    private Long id;
+    private String name;
     private Double grade;
     private boolean completed;
     private boolean overdue;
     private LocalDate dueDate;
     private String assignmentType;
 
-    public Assignment(String assignmentName , double grade , boolean completed ,
+    public Assignment(String name , double grade , boolean completed ,
                       boolean overdue , LocalDate dueDate, String assignmentType) {
-        this.assignmentName = assignmentName;
+        this.name = name;
         this.grade = grade;
         this.completed = completed;
         this.overdue = overdue;
