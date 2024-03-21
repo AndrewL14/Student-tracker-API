@@ -13,5 +13,4 @@ public class EditStudentRequest {
     private Long studentId;
     private Optional<Integer> periodToChange = Optional.empty();
     private String nameToChange = "";
-    private Optional<Double> gradeToChange = Optional.empty();
 }
