@@ -1,9 +1,9 @@
 package com.tracer.constant;
 
 public enum Authority {
-    TEACHER("Teacher"),
-    STUDENT("Student"),
-    ADMIN("Admin");
+    TEACHER("TEACHER"),
+    STUDENT("STUDENT"),
+    ADMIN("ADMIN");
 
     private final String label;
 
