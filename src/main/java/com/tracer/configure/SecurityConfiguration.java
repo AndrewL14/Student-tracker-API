@@ -10,6 +10,7 @@ import org.springframework.security.authentication.dao.DaoAuthenticationProvider
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,16 +28,19 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 
 @Configuration
 public class SecurityConfiguration {
 
     private final RSAKeyProperties keys;
     private final UserDetailsService userDetailsService;
+    private final LogoutHandler logoutHandler;
 
-    public SecurityConfiguration(RSAKeyProperties keys , UserDetailsService userDetailsService) {
+    public SecurityConfiguration(RSAKeyProperties keys , UserDetailsService userDetailsService, LogoutHandler logoutHandler) {
         this.keys = keys;
         this.userDetailsService = userDetailsService;
+        this.logoutHandler = logoutHandler;
     }
 
     @Bean
@@ -71,6 +75,11 @@ public class SecurityConfiguration {
         http.sessionManagement(
                 session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         );
+        http.logout(logout -> {
+            logout.logoutUrl("/auth/logout")
+                    .addLogoutHandler(logoutHandler)
+                    .logoutSuccessHandler(((request , response , authentication) -> SecurityContextHolder.clearContext()));
+        });
 
         return http.build();
     }
