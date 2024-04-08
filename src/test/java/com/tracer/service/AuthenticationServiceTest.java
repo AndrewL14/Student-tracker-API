@@ -1,13 +1,13 @@
 package com.tracer.service;
 
-import com.tracer.model.EmailToken;
-import com.tracer.model.PasswordResetToken;
+import com.tracer.model.tokens.EmailToken;
+import com.tracer.model.tokens.PasswordResetToken;
 import com.tracer.model.Role;
 import com.tracer.model.Teacher;
 import com.tracer.model.response.LoginResponse;
 import com.tracer.repository.AuthorityRepository;
-import com.tracer.repository.EmailTokenRepository;
-import com.tracer.repository.PasswordResetTokenRepository;
+import com.tracer.repository.tokens.EmailTokenRepository;
+import com.tracer.repository.tokens.PasswordResetTokenRepository;
 import com.tracer.repository.TeacherRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
