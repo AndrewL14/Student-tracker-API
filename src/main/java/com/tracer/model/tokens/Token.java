@@ -6,7 +6,7 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "refresh_tokens")
+@Table(name = "tokens")
 @NoArgsConstructor
 @Data
 @EqualsAndHashCode
@@ -16,9 +16,10 @@ import java.time.LocalDateTime;
 public class Token {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "refresh_token_id", unique = true)
-    private Long refreshTokenId;
+    @Column(name = "token_id", unique = true)
+    private Long tokenId;
     private String username;
+    @Column(length = 4000)
     private String jwt;
     private boolean expired;
     private LocalDateTime expirationTime;
