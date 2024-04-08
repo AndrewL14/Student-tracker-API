@@ -13,17 +13,19 @@ import java.time.LocalDateTime;
 @ToString
 @Getter
 @Setter
-public class RefreshToken {
+public class Token {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "refresh_token_id", unique = true)
     private Long refreshTokenId;
     private String username;
+    private String jwt;
     private boolean expired;
     private LocalDateTime expirationTime;
 
-    public RefreshToken(String username , boolean expired , LocalDateTime expirationTime) {
+    public Token(String username , String jwt , boolean expired , LocalDateTime expirationTime) {
         this.username = username;
+        this.jwt = jwt;
         this.expired = expired;
         this.expirationTime = expirationTime;
     }
