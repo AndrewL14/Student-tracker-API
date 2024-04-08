@@ -1,6 +1,6 @@
 package com.tracer.repository;
 
-import com.tracer.model.PasswordResetToken;
+import com.tracer.model.tokens.PasswordResetToken;
 import com.tracer.model.Teacher;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;

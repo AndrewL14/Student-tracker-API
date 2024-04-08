@@ -1,5 +1,6 @@
-package com.tracer.model;
+package com.tracer.model.tokens;
 
+import com.tracer.model.Teacher;
 import jakarta.persistence.*;
 import lombok.*;
 
