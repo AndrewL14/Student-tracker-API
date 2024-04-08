@@ -1,13 +1,13 @@
 package com.tracer.service;
 
-import com.tracer.model.EmailToken;
-import com.tracer.model.PasswordResetToken;
+import com.tracer.model.tokens.EmailToken;
+import com.tracer.model.tokens.PasswordResetToken;
 import com.tracer.model.Role;
 import com.tracer.model.Teacher;
 import com.tracer.model.response.LoginResponse;
 import com.tracer.repository.AuthorityRepository;
-import com.tracer.repository.EmailTokenRepository;
-import com.tracer.repository.PasswordResetTokenRepository;
+import com.tracer.repository.tokens.EmailTokenRepository;
+import com.tracer.repository.tokens.PasswordResetTokenRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -144,6 +144,9 @@ public class AuthenticationService {
         return new LoginResponse(teacherToUpdate.getUsername(), teacherToUpdate.getEmail(), jwt);
     }
 
+    public String generateRefreshToken(Authentication auth) {
+         return tokenService.generateRefreshToken(auth);
+    }
     private void validateToken(EmailToken token) {
         if (LocalDateTime.now().isAfter(token.getExpiresAt())) throw new IllegalStateException("Token expired");
         if (token.getTeacher() == null) throw new IllegalStateException("Token not associated with a teacher");
