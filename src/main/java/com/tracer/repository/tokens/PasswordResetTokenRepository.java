@@ -1,4 +1,4 @@
-package com.tracer.repository;
+package com.tracer.repository.tokens;
 
 import com.tracer.model.tokens.PasswordResetToken;
 import com.tracer.model.Teacher;
