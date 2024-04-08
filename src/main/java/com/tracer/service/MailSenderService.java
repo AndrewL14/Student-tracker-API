@@ -1,10 +1,10 @@
 package com.tracer.service;
 
-import com.tracer.model.EmailToken;
-import com.tracer.model.PasswordResetToken;
+import com.tracer.model.tokens.EmailToken;
+import com.tracer.model.tokens.PasswordResetToken;
 import com.tracer.model.Teacher;
-import com.tracer.repository.EmailTokenRepository;
-import com.tracer.repository.PasswordResetTokenRepository;
+import com.tracer.repository.tokens.EmailTokenRepository;
+import com.tracer.repository.tokens.PasswordResetTokenRepository;
 import com.tracer.repository.TeacherRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
