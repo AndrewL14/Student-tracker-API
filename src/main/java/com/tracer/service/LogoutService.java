@@ -1,4 +1,4 @@
-package com.tracer.util;
+package com.tracer.service;
 
 import com.tracer.repository.tokens.TokenRepository;
 import jakarta.servlet.http.HttpServletRequest;
