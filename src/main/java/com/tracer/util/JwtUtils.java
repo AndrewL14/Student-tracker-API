@@ -1,11 +1,16 @@
 package com.tracer.util;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
 import jakarta.servlet.http.HttpServletRequest;
-import org.springframework.security.core.Authentication;
+import lombok.experimental.UtilityClass;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 
+import java.util.Objects;
+@UtilityClass
 public class JwtUtils {
+    @Autowired
+    private JwtDecoder jwtDecoder;
     public static String extractJwtFromRequest(HttpServletRequest request) {
         String authorizationHeader = request.getHeader("Authorization");
         if (authorizationHeader != null && authorizationHeader.startsWith("Bearer ")) {
@@ -14,13 +19,7 @@ public class JwtUtils {
         return null;
     }
 
-    public static Long getTokenExpiration(Authentication authentication) {
-        Object principal = authentication.getPrincipal();
-        if (principal instanceof String) {
-            String token = (String) principal;
-            Claims claims = Jwts.parser().parseClaimsJws(token).getBody();
-            return claims.getExpiration().getTime();
-        }
-        return null;
+    public static Long getTokenExpiration(Jwt jwt) {
+        return Objects.requireNonNull(jwt.getExpiresAt()).toEpochMilli();
     }
 }
