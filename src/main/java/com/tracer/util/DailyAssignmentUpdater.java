@@ -16,7 +16,9 @@ public class DailyAssignmentUpdater {
     @Autowired
     private AssignmentRepository assignmentRepository;
 
-
+    /**
+     * Checks if the assignment is overdue, if so updates overdue status and saves to database.
+     */
     @Scheduled(cron = "0 0 0 * * *")
     public void CheckIfAssignmentIsLate() {
         List<Assignment> assignments = assignmentRepository.findAll();
@@ -32,6 +34,13 @@ public class DailyAssignmentUpdater {
         }
     }
 
+    /**
+     * Checks if the assignment is late.
+     * Assignment is late if due date is after current local time and not completed  and
+     * not late if due date is before current local time and is completed.
+     * @param assignment assignment object to see if the assignment is late or not.
+     * @return true or false.
+     */
     private boolean isLate(Assignment assignment) {
         return assignment.getDueDate().isBefore(LocalDate.now()) && !assignment.isCompleted();
     }
