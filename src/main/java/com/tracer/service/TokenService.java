@@ -83,7 +83,8 @@ public class TokenService {
 
     public void validateToken(HttpServletRequest servletRequest, Authentication auth) {
         String jwt = JwtUtils.extractJwtFromRequest(servletRequest);
-        Long expirationTime = JwtUtils.getTokenExpiration(auth);
+        Jwt webToken = jwtDecoder.decode(jwt);
+        Long expirationTime = JwtUtils.getTokenExpiration(webToken);
         var token = tokenRepository.findByUsernameAndJwt(auth.getName() , jwt)
                 .orElseThrow(ExpiredTokenException::new);
         Long currentTime = System.currentTimeMillis();
