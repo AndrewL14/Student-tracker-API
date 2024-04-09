@@ -32,6 +32,11 @@ public class MailSenderService {
     @Value("${spring.mail.username}")
     private String senderEmail;
 
+    /**
+     * Sends a custom email to a users email address with the necessary token for a password
+     * reset.
+     * @param email A users email address.
+     */
     public void sendPasswordReset(String email) {
         PasswordResetToken passwordResetToken = generateNewPasswordResetToken(email);
         String subject = "Grader: Reset Password";
@@ -50,6 +55,11 @@ public class MailSenderService {
         logger.info("successfully sent password reset email");
     }
 
+    /**
+     * Sends a custom email to a users email address with the necessary token to verify
+     * the given email address.
+     * @param email A users email address.
+     */
     public void sendEmailVerification(String email) {
         String subject = "Grader: Verify Email";
         EmailToken emailToken = generateNewEmailToken(email);
@@ -69,6 +79,12 @@ public class MailSenderService {
         logger.info("successfully sent email verification email");
     }
 
+    /**
+     * Generates and saves a new password reset token to verify the users identity and,
+     * validate the tokens' authenticity when sent back.
+     * @param email A email Address
+     * @return A new PasswordResetToken object containing a token, email address, user, and validation times.
+     */
     public PasswordResetToken generateNewPasswordResetToken(String email) {
         logger.info(String.format("Creating new password reset token for %s", email));
         Teacher teacher = teacherRepository.findByEmail(email)
@@ -82,6 +98,12 @@ public class MailSenderService {
         );
     }
 
+    /**
+     * Generates and saves a new email verification token to verify the users identity and,
+     * validate the tokens' authenticity when sent back.
+     * @param email A email Address
+     * @return A new EmailToken object containing a token, user, and validation times.
+     */
     public EmailToken generateNewEmailToken(String email) {
         logger.info(String.format("Creating new email token for %s", email));
         Teacher teacher =  teacherRepository.findByEmail(email)

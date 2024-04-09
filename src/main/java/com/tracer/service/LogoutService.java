@@ -15,6 +15,12 @@ public class LogoutService implements LogoutHandler {
 
     private final TokenRepository tokenRepository;
 
+    /**
+     * A Custom Logout method invalidating any tokens created during users session.
+     * @param request HTTP request sent by user.
+     * @param response HTTP response sent by server.
+     * @param authentication N\A.
+     */
     @Override
     public void logout(
             HttpServletRequest request,

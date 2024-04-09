@@ -33,6 +33,11 @@ public class TokenService {
     private final Logger logger = LoggerFactory.getLogger(TokenService.class);
     private static final int TOKEN_LENGTH = 6;
 
+    /**
+     * Creates a new JWT with the authentication object.
+     * @param auth contains information needed to create JWT
+     * @return A new JWT.
+     */
     public String generateJwt(Authentication auth){
         logger.info("beginning creation of JWT");
         Instant now = Instant.now();
@@ -56,6 +61,11 @@ public class TokenService {
         return jwt;
     }
 
+    /**
+     * Creates a new JWT when the old JWT has expired.
+     * @param auth information need to verify user and create JWT.
+     * @return a new JWT.
+     */
     public String generateRefreshToken(Authentication auth) {
         logger.info("beginning creation of refresh token");
         String username = auth.getName();
@@ -65,12 +75,22 @@ public class TokenService {
         invalidateUserToken(username);
         return generateJwt(auth);
     }
+
+    /**
+     * Creates a new email token to send the user.
+     * @return a string of characters.
+     */
     public String generateEmailVerificationToken() {
         logger.info("beginning creation of email token");
         byte[] randomBytes = new byte[TOKEN_LENGTH];
         new SecureRandom().nextBytes(randomBytes);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
     }
+
+    /**
+     * Makes all JWTs associated with a given user invalid.
+     * @param username user's username.
+     */
     public void invalidateUserToken(String username) {
         var tokens = tokenRepository.findAllByUsername(username);
         if (!tokens.isEmpty()) {
@@ -81,6 +101,12 @@ public class TokenService {
         tokenRepository.saveAll(tokens);
     }
 
+    /**
+     * Custom JWT validation method, validating expiration and if the token matches the
+     * user.
+     * @param servletRequest request body and headers to be used.
+     * @param auth used to get the username.
+     */
     public void validateToken(HttpServletRequest servletRequest, Authentication auth) {
         String jwt = JwtUtils.extractJwtFromRequest(servletRequest);
         Jwt webToken = jwtDecoder.decode(jwt);

@@ -139,12 +139,24 @@ public class TeacherService implements UserDetailsService {
         return teacherOpt.orElseThrow(() -> new UsernameNotFoundException("Invalid Credentials"));
     }
 
+    /**
+     * Fetches a User with a given email if the user is not found throws a
+     * UsernameNotFoundException.
+     * @param email Users email address.
+     * @return the user details matching the email.
+     * @throws UsernameNotFoundException user was not found in the database.
+     */
     public UserDetails loadUserByEmail(String email) throws UsernameNotFoundException {
         logger.info(String.format("finding teacher with email: %s", email));
         Optional<Teacher> teacherOpt = teacherRepository.findByEmail(email);
         return teacherOpt.orElseThrow(() -> new UsernameNotFoundException("Invalid Credentials"));
     }
 
+    /**
+     * Saves a new Teacher to the database.
+     * @param teacher user to be saved in database.
+     * @return the userDetails of that teacher.
+     */
     public UserDetails saveNewTeacher(Teacher teacher) {
         logger.info("Saving new teacher.");
         return teacherRepository.save(teacher);
