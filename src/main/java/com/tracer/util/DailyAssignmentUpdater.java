@@ -26,6 +26,7 @@ public class DailyAssignmentUpdater {
             executorService.submit(() -> {
                 if (isLate(assignment)) {
                     assignment.setOverdue(true);
+                    assignmentRepository.save(assignment);
                 }
             });
         }
