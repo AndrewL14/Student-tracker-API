@@ -61,4 +61,11 @@ public class AuthController {
                 authService.completePasswordReset(request.getToken() , request.getPassword()), HttpStatus.OK
         );
     }
+
+    @PostMapping("/refresh-token")
+    public ResponseEntity<String> generateRefreshToken(Authentication authentication) {
+        return new ResponseEntity<String>(
+                authService.generateRefreshToken(authentication), HttpStatus.OK
+        );
+    }
 }
