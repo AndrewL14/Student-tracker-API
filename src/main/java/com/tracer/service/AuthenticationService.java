@@ -65,8 +65,10 @@ public class AuthenticationService {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(username, password)
         );
-        String token = tokenService.generateJwt(authentication);
-        return new LoginResponse(teacher.getUsername(), teacher.getEmail(), token);
+        String jwt = tokenService.generateJwt(authentication);
+        String refreshToken = tokenService.generateRefreshToken(authentication);
+        return new LoginResponse(teacher.getUsername(), teacher.getEmail(),
+                jwt, refreshToken);
     }
 
     /**
@@ -81,9 +83,11 @@ public class AuthenticationService {
         Authentication authentication = authenticationManager.authenticate(
                    new UsernamePasswordAuthenticationToken(username, password)
         );
-        String token = tokenService.generateJwt(authentication);
+        String jwt = tokenService.generateJwt(authentication);
+        String refreshToken = tokenService.generateRefreshToken(authentication);
         Teacher teacher = (Teacher) teacherService.loadUserByUsername(username);
-        return new LoginResponse(teacher.getUsername(), teacher.getEmail(), token);
+        return new LoginResponse(teacher.getUsername(), teacher.getEmail(),
+                jwt, refreshToken);
     }
 
     /**
@@ -98,8 +102,10 @@ public class AuthenticationService {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(teacher.getUsername(), password)
         );
-        String token = tokenService.generateJwt(authentication);
-        return new LoginResponse(teacher.getUsername(), teacher.getEmail(), token);
+        String jwt = tokenService.generateJwt(authentication);
+        String refreshToken = tokenService.generateRefreshToken(authentication);
+        return new LoginResponse(teacher.getUsername(), teacher.getEmail(),
+                jwt, refreshToken);
     }
 
     /**
@@ -168,8 +174,10 @@ public class AuthenticationService {
                 new UsernamePasswordAuthenticationToken(teacherToUpdate.getUsername(), password)
         );
         String jwt = tokenService.generateJwt(authentication);
+        String refreshToken = tokenService.generateRefreshToken(authentication);
         resetTokenRepository.deleteAllByTeacher(teacherToUpdate);
-        return new LoginResponse(teacherToUpdate.getUsername(), teacherToUpdate.getEmail(), jwt);
+        return new LoginResponse(teacherToUpdate.getUsername(), teacherToUpdate.getEmail(),
+                jwt, refreshToken);
     }
 
     /**
@@ -180,6 +188,10 @@ public class AuthenticationService {
      */
     public String generateRefreshToken(Authentication auth) {
          return tokenService.generateRefreshToken(auth);
+    }
+
+    public String refreshToken(String token) {
+        return tokenService.refreshToken(token);
     }
 
     /**
