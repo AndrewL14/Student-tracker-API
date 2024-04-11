@@ -1,16 +1,20 @@
 package com.tracer.service;
 
 import com.tracer.exception.ExpiredTokenException;
+import com.tracer.model.tokens.RefreshToken;
 import com.tracer.model.tokens.Token;
+import com.tracer.repository.TeacherRepository;
+import com.tracer.repository.tokens.RefreshTokenRepository;
 import com.tracer.repository.tokens.TokenRepository;
 import com.tracer.util.JwtUtils;
-import com.tracer.util.KeyGeneratorUtility;
 import jakarta.servlet.http.HttpServletRequest;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Service;
 
@@ -18,17 +22,22 @@ import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
 public class TokenService {
-
     @Autowired
     private JwtEncoder jwtEncoder;
     @Autowired
     private JwtDecoder jwtDecoder;
     @Autowired
+    private TeacherRepository teacherRepository;
+    @Autowired
     private TokenRepository tokenRepository;
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
 
     private final Logger logger = LoggerFactory.getLogger(TokenService.class);
     private static final int TOKEN_LENGTH = 6;
@@ -52,7 +61,7 @@ public class TokenService {
                 .subject(auth.getName())
                 .claim("roles", scope)
                 .issuedAt(now)
-                .expiresAt(now.plusMillis(1800000))
+                .expiresAt(now.plusMillis(30000))
                 .build();
         String jwt = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
         tokenRepository.save(
@@ -61,19 +70,39 @@ public class TokenService {
         return jwt;
     }
 
-    /**
-     * Creates a new JWT when the old JWT has expired.
-     * @param auth information need to verify user and create JWT.
-     * @return a new JWT.
-     */
     public String generateRefreshToken(Authentication auth) {
-        logger.info("beginning creation of refresh token");
-        String username = auth.getName();
-        var token = tokenRepository.findByUsername(username)
+        Instant now = Instant.now();
+
+        String scope = auth.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .collect(Collectors.joining(" "));
+
+        JwtClaimsSet claims = JwtClaimsSet.builder()
+                .issuer("self")
+                .issuedAt(now)
+                .subject(auth.getName())
+                .claim("roles", scope)
+                .issuedAt(now)
+                .expiresAt(now.plusMillis(25200000))
+                .build();
+        String token = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
+        refreshTokenRepository.save(
+                new RefreshToken(auth.getName() , token)
+        );
+        return token;
+    }
+    public String refreshToken(String token) {
+        var refreshToken = refreshTokenRepository.findByToken(token)
                 .orElseThrow();
-        if (token.isExpired()) throw new ExpiredTokenException("token is expired");
-        invalidateUserToken(username);
-        return generateJwt(auth);
+        validateRefreshToken(token);
+        String username = refreshToken.getUsername();
+        invalidateAllUserToken(username);
+        var teacher = teacherRepository.findByUsername(username)
+                .orElseThrow();
+
+        return generateJwt(new UsernamePasswordAuthenticationToken(
+                teacher, null, teacher.getAuthorities()
+        ));
     }
 
     /**
@@ -91,14 +120,29 @@ public class TokenService {
      * Makes all JWTs associated with a given user invalid.
      * @param username user's username.
      */
-    public void invalidateUserToken(String username) {
+    public void invalidateAllUserToken(String username) {
         var tokens = tokenRepository.findAllByUsername(username);
         if (!tokens.isEmpty()) {
             tokens.parallelStream().forEach(token -> {
-                token.setExpired(true);
+                if (token.isExpired())  {
+                    tokenRepository.delete(token);
+                } else {
+                    token.setValid(false);
+                    tokenRepository.save(token);
+                }
             });
         }
-        tokenRepository.saveAll(tokens);
+    }
+
+    public void invalidateUserToken(String jwt) {
+        var token = tokenRepository.findByJwt(jwt)
+                .orElseThrow();
+        if (token.isExpired())  {
+            tokenRepository.delete(token);
+        } else {
+            token.setValid(false);
+            tokenRepository.save(token);
+        }
     }
 
     /**
@@ -107,17 +151,28 @@ public class TokenService {
      * @param servletRequest request body and headers to be used.
      * @param auth used to get the username.
      */
-    public void validateToken(HttpServletRequest servletRequest, Authentication auth) {
+    public void validateJwt(HttpServletRequest servletRequest, Authentication auth) {
+        logger.info("made it here");
         String jwt = JwtUtils.extractJwtFromRequest(servletRequest);
-        Jwt webToken = jwtDecoder.decode(jwt);
-        Long expirationTime = JwtUtils.getTokenExpiration(webToken);
         var token = tokenRepository.findByUsernameAndJwt(auth.getName() , jwt)
                 .orElseThrow(ExpiredTokenException::new);
-        Long currentTime = System.currentTimeMillis();
-        if (expirationTime < currentTime || token.isExpired()) {
+        if (JwtUtils.isTokenExpired(jwtDecoder.decode(jwt)) || !token.isValid()) {
+            logger.error("token invalid");
             token.setExpired(true);
+            token.setValid(false);
             tokenRepository.save(token);
             throw new ExpiredTokenException("Token has Expired.");
+        }
+    }
+
+    public void validateRefreshToken(String token) {
+        var refreshToken = refreshTokenRepository.findByToken(token)
+                .orElseThrow();
+        Jwt jwt = jwtDecoder.decode(token);
+        if (!refreshToken.isValid() || JwtUtils.isTokenExpired(jwt)) {
+            refreshToken.setValid(false);
+            refreshToken.setExpired(true);
+            throw new ExpiredTokenException("refreshToken has expired.");
         }
     }
 }
