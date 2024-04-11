@@ -1,13 +1,13 @@
 package com.tracer.service;
 
-import com.tracer.model.EmailToken;
-import com.tracer.model.PasswordResetToken;
+import com.tracer.model.tokens.EmailToken;
+import com.tracer.model.tokens.PasswordResetToken;
 import com.tracer.model.Role;
 import com.tracer.model.Teacher;
 import com.tracer.model.response.LoginResponse;
 import com.tracer.repository.AuthorityRepository;
-import com.tracer.repository.EmailTokenRepository;
-import com.tracer.repository.PasswordResetTokenRepository;
+import com.tracer.repository.tokens.EmailTokenRepository;
+import com.tracer.repository.tokens.PasswordResetTokenRepository;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -65,8 +65,10 @@ public class AuthenticationService {
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(username, password)
         );
-        String token = tokenService.generateJwt(authentication);
-        return new LoginResponse(teacher.getUsername(), teacher.getEmail(), token);
+        String jwt = tokenService.generateJwt(authentication);
+        String refreshToken = tokenService.generateRefreshToken(authentication);
+        return new LoginResponse(teacher.getUsername(), teacher.getEmail(),
+                jwt, refreshToken);
     }
 
     /**
@@ -81,26 +83,47 @@ public class AuthenticationService {
         Authentication authentication = authenticationManager.authenticate(
                    new UsernamePasswordAuthenticationToken(username, password)
         );
-        String token = tokenService.generateJwt(authentication);
+        String jwt = tokenService.generateJwt(authentication);
+        String refreshToken = tokenService.generateRefreshToken(authentication);
         Teacher teacher = (Teacher) teacherService.loadUserByUsername(username);
-        return new LoginResponse(teacher.getUsername(), teacher.getEmail(), token);
+        return new LoginResponse(teacher.getUsername(), teacher.getEmail(),
+                jwt, refreshToken);
     }
 
+    /**
+     * Logs user in using their email and password, returning a JWT, username, and email.
+     * @param email String of characters
+     * @param password String of characters
+     * @return A loginResponse containing a JWT, username, and email (All string objects)
+     */
     public LoginResponse loginUserByEmail(String email, String password) {
         logger.info(String.format("logging in user with email: %s", email));
         Teacher teacher = (Teacher) teacherService.loadUserByEmail(email);
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(teacher.getUsername(), password)
         );
-        String token = tokenService.generateJwt(authentication);
-        return new LoginResponse(teacher.getUsername(), teacher.getEmail(), token);
+        String jwt = tokenService.generateJwt(authentication);
+        String refreshToken = tokenService.generateRefreshToken(authentication);
+        return new LoginResponse(teacher.getUsername(), teacher.getEmail(),
+                jwt, refreshToken);
     }
 
+    /**
+     * Calls MailSender service to send an email with a code of characters to the users email.
+     * @param email an email address to sand the email.
+     */
     public void sendEmailVerification(String email) {
         logger.info(String.format("beginning email verification process for email: %s", email));
         mailSenderService.sendEmailVerification(email);
     }
 
+    /**
+     * Completes the email verification process by taking the token sent to the users email,
+     * and verifies weather that token is valid and was given to the right user.
+     * @param token A Code given by the user.
+     * @param username the user's username taken from the JWT.
+     * @return A placeholder string notifying the user there email has been verified.
+     */
     public String verifyEmail(String token, String username) {
         logger.info(String.format("beginning user verification process for user: %s", username));
         EmailToken tokenToBeVerified = emailTokenRepository.findByToken(token)
@@ -118,12 +141,23 @@ public class AuthenticationService {
         return "Email verified";
     }
 
+    /**
+     * Calls MailSender to send a token to the users email address.
+     * @param email User's email address.
+     */
     public void initiatePasswordReset(String email) {
         logger.info(String.format("beginning password reset process for email: %s", email));
         teacherService.loadUserByEmail(email);
         mailSenderService.sendPasswordReset(email);
     }
 
+    /**
+     * Completes the password reset by taking the token to verify the correct user and the
+     * new password to be used.
+     * @param token Code used to authorize the method.
+     * @param password new password for the user.
+     * @return A username, email, and new JWT for the user.
+     */
     public LoginResponse completePasswordReset(String token, String password) {
         logger.info("completing password reset process");
         PasswordResetToken resetToken = resetTokenRepository.findByToken(token)
@@ -140,16 +174,40 @@ public class AuthenticationService {
                 new UsernamePasswordAuthenticationToken(teacherToUpdate.getUsername(), password)
         );
         String jwt = tokenService.generateJwt(authentication);
+        String refreshToken = tokenService.generateRefreshToken(authentication);
         resetTokenRepository.deleteAllByTeacher(teacherToUpdate);
-        return new LoginResponse(teacherToUpdate.getUsername(), teacherToUpdate.getEmail(), jwt);
+        return new LoginResponse(teacherToUpdate.getUsername(), teacherToUpdate.getEmail(),
+                jwt, refreshToken);
     }
 
+    /**
+     *  Calls GenerateRefreshToken to create a new JWT token for the user. if the users jwt
+     *  has expired.
+     * @param auth users authentication to be used to verify and create a new JWT.
+     * @return new JWT.
+     */
+    public String generateRefreshToken(Authentication auth) {
+         return tokenService.generateRefreshToken(auth);
+    }
+
+    public String refreshToken(String token) {
+        return tokenService.refreshToken(token);
+    }
+
+    /**
+     * Makes Sure the token given is still valid and ready to be used.
+     * @param token containing the code, user, and validation information.
+     */
     private void validateToken(EmailToken token) {
         if (LocalDateTime.now().isAfter(token.getExpiresAt())) throw new IllegalStateException("Token expired");
         if (token.getTeacher() == null) throw new IllegalStateException("Token not associated with a teacher");
         if (token.getTeacher().isEmailVerified()) throw new IllegalStateException("Email already verified");
     }
 
+    /**
+     * Makes sure the token given is still valid and ready to be used.
+     * @param token containing the code, user, and validation information
+     */
     private void validatePasswordResetToken(PasswordResetToken token) {
         if (LocalDateTime.now().isAfter(token.getExpiresAt())) throw new IllegalStateException("Token expired");
         if (token.getTeacher() == null) throw new IllegalStateException("Token not associated with a teacher");

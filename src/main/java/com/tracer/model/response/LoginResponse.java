@@ -16,4 +16,5 @@ public class LoginResponse {
     private String teacherUsername;
     private String teacherEmail;
     private String jwt;
+    private String refreshToken;
 }

@@ -1,15 +1,17 @@
 package com.tracer.configure;
 
-import com.tracer.constant.Authority;
 import com.tracer.util.RSAKeyProperties;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -27,17 +29,17 @@ import com.nimbusds.jose.jwk.RSAKey;
 import com.nimbusds.jose.jwk.source.ImmutableJWKSet;
 import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
+import org.springframework.security.web.authentication.logout.LogoutHandler;
 
 @Configuration
+@EnableWebSecurity
+@RequiredArgsConstructor
+@EnableMethodSecurity
 public class SecurityConfiguration {
 
     private final RSAKeyProperties keys;
     private final UserDetailsService userDetailsService;
-
-    public SecurityConfiguration(RSAKeyProperties keys , UserDetailsService userDetailsService) {
-        this.keys = keys;
-        this.userDetailsService = userDetailsService;
-    }
+    private final LogoutHandler logoutHandler;
 
     @Bean
     public PasswordEncoder passwordEncoder(){
@@ -71,6 +73,11 @@ public class SecurityConfiguration {
         http.sessionManagement(
                 session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
         );
+        http.logout(logout -> {
+            logout.logoutUrl("/auth/logout")
+                    .addLogoutHandler(logoutHandler)
+                    .logoutSuccessHandler(((request , response , authentication) -> SecurityContextHolder.clearContext()));
+        });
 
         return http.build();
     }
