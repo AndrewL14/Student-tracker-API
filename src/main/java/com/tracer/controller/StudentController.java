@@ -33,7 +33,7 @@ public class StudentController {
     @GetMapping("/get-all{id}")
     public ResponseEntity<List<Assignment>> getAllAssignmentsByStudentId(@RequestParam Long id,
                                                                          HttpServletRequest servletRequest, Authentication authentication ) {
-        tokenService.validateToken(servletRequest, authentication);
+        tokenService.validateJwt(servletRequest, authentication);
         return new ResponseEntity<List<Assignment>>(
                 service.getAllAssignmentsByStudentId(id), HttpStatus.OK
         );
@@ -42,7 +42,7 @@ public class StudentController {
     @PutMapping("/add")
     public ResponseEntity<List<Assignment>> addNewAssignment(@RequestBody AddAssignmentRequest request,
                                                              HttpServletRequest servletRequest, Authentication authentication ) {
-        tokenService.validateToken(servletRequest, authentication);
+        tokenService.validateJwt(servletRequest, authentication);
         return new ResponseEntity<List<Assignment>>(
                 service.addNewAssignment(request), HttpStatus.CREATED
         );
@@ -51,7 +51,7 @@ public class StudentController {
     @PostMapping("/update-status/")
     public ResponseEntity<List<Assignment>> updateStatus(@RequestBody UpdateAssignmentStatusRequest request,
                                                          HttpServletRequest servletRequest, Authentication authentication ) {
-        tokenService.validateToken(servletRequest, authentication);
+        tokenService.validateJwt(servletRequest, authentication);
         return new ResponseEntity<>(
                 service.updateCompleteStatus(request.getStudentId(), request.getAssignmentId()), HttpStatus.OK
         );
@@ -60,7 +60,7 @@ public class StudentController {
     @PostMapping("/edit")
     public ResponseEntity<List<Assignment>> editAssignment(@RequestBody EditAssignmentRequest request,
                                                            HttpServletRequest servletRequest, Authentication authentication ) {
-        tokenService.validateToken(servletRequest, authentication);
+        tokenService.validateJwt(servletRequest, authentication);
         return new ResponseEntity<List<Assignment>>(
                 service.editAssignment(request), HttpStatus.OK
         );
@@ -69,7 +69,7 @@ public class StudentController {
     @DeleteMapping("/delete")
     public ResponseEntity<List<Assignment>> deleteAssignment(@RequestBody DeleteAssignmentRequest request,
                                                              HttpServletRequest servletRequest, Authentication authentication ) {
-        tokenService.validateToken(servletRequest, authentication);
+        tokenService.validateJwt(servletRequest, authentication);
         return new ResponseEntity<List<Assignment>>(
                 service.deleteAssignment(request), HttpStatus.OK
         );
