@@ -61,7 +61,7 @@ public class TokenService {
                 .subject(auth.getName())
                 .claim("roles", scope)
                 .issuedAt(now)
-                .expiresAt(now.plusMillis(30000))
+                .expiresAt(now.plusMillis(3600000))
                 .build();
         String jwt = jwtEncoder.encode(JwtEncoderParameters.from(claims)).getTokenValue();
         tokenRepository.save(
