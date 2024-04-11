@@ -1,14 +1,15 @@
 package com.tracer.configure;
 
-import com.tracer.constant.Authority;
 import com.tracer.util.RSAKeyProperties;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.ProviderManager;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -31,17 +32,14 @@ import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 
 @Configuration
+@EnableWebSecurity
+@RequiredArgsConstructor
+@EnableMethodSecurity
 public class SecurityConfiguration {
 
     private final RSAKeyProperties keys;
     private final UserDetailsService userDetailsService;
     private final LogoutHandler logoutHandler;
-
-    public SecurityConfiguration(RSAKeyProperties keys , UserDetailsService userDetailsService, LogoutHandler logoutHandler) {
-        this.keys = keys;
-        this.userDetailsService = userDetailsService;
-        this.logoutHandler = logoutHandler;
-    }
 
     @Bean
     public PasswordEncoder passwordEncoder(){
