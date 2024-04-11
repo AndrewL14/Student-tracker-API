@@ -9,6 +9,8 @@ When using Postman put the JWT in authorization -> type -> bearer token. For any
 
 Application will be running on localhost:5000 on dev mode.
 
+Sample Request Requiring a JWT token.
+
 ![example 1](example-1.png)
 ![example 2](example-2.png)
 
@@ -36,11 +38,32 @@ curl -X POST -H "Content-Type: application/json" -d '{"username": "james", "pass
   "password": "password"
 }
 ```
+```yaml
+  - path: "/student/refresh-token{token}"
+    method: "POST"
+    description: "Refresh token."
+    request_params:
+      - name: "token"
+        type: "string"
+        description: "Refresh token."
+    headers:
+      - name: "Authorization"
+        type: "string"
+        description: "JWT token for authentication."
+```
 All other requests are in Postman. In the Auth tab select `Bearer Token` and put your JWT in.
 request files are formatted in `.yaml` to show what is needed, for requests requiring a body, a
 corresponding `.json` format has been provided for quick copy and paste.
-
-Here is all the necessary information needed to carry out requests in Postman:
+```yaml
+endpoints:
+  - path: "/student/generate/refresh-token"
+    method: "POST"
+    description: "Generate a refresh token."
+    headers:
+      - name: "Authorization"
+        type: "string"
+        description: "JWT token for authentication."
+```
 
 ## Student request
 ___
