@@ -6,6 +6,7 @@ import com.tracer.model.request.authentication.EmailLoginRequest;
 import com.tracer.model.request.authentication.RegistrationRequest;
 import com.tracer.model.response.LoginResponse;
 import com.tracer.service.AuthenticationService;
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -62,10 +63,17 @@ public class AuthController {
         );
     }
 
-    @PostMapping("/refresh-token")
+    @PostMapping("/generate/refresh-token")
     public ResponseEntity<String> generateRefreshToken(Authentication authentication) {
         return new ResponseEntity<String>(
                 authService.generateRefreshToken(authentication), HttpStatus.OK
+        );
+    }
+
+    @PostMapping("/refresh-token{token}")
+    public ResponseEntity<String> refreshToken(@RequestParam String token) {
+        return new ResponseEntity<String>(
+                authService.refreshToken(token), HttpStatus.OK
         );
     }
 }
