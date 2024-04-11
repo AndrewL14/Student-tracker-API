@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 
+import java.time.Instant;
 import java.util.Objects;
 @UtilityClass
 public class JwtUtils {
@@ -25,12 +26,16 @@ public class JwtUtils {
         return null;
     }
 
+    public static boolean isTokenExpired(Jwt jwt) {
+        return Instant.now().toEpochMilli() > getTokenExpiration(jwt);
+    }
+
     /**
      * Extracts a JWT's expatriation.
      * @param jwt Json Web token
      * @return the expatriation in milliseconds.
      */
-    public static Long getTokenExpiration(Jwt jwt) {
+    private static Long getTokenExpiration(Jwt jwt) {
         return Objects.requireNonNull(jwt.getExpiresAt()).toEpochMilli();
     }
 }
