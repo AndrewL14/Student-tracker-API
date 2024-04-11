@@ -37,7 +37,6 @@ public class TeacherService implements UserDetailsService {
         logger.info(String.format("Getting all students associated with teacher: %s", username));
         Teacher teacher = teacherRepository.findByUsername(username)
                 .orElseThrow(NullPointerException::new);
-
         return teacher.getStudents().parallelStream().toList();
     }
 
