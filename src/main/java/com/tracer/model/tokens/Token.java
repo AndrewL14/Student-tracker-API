@@ -22,12 +22,14 @@ public class Token {
     @Column(length = 4000)
     private String jwt;
     private boolean expired;
+    private boolean valid;
     private LocalDateTime expirationTime;
 
     public Token(String username , String jwt , boolean expired , LocalDateTime expirationTime) {
         this.username = username;
         this.jwt = jwt;
         this.expired = expired;
+        this.valid = true;
         this.expirationTime = expirationTime;
     }
 }
