@@ -1,5 +1,7 @@
 package com.tracer.service;
 
+import com.tracer.model.tokens.RefreshToken;
+import com.tracer.repository.tokens.RefreshTokenRepository;
 import com.tracer.repository.tokens.TokenRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Service;
 public class LogoutService implements LogoutHandler {
 
     private final TokenRepository tokenRepository;
+    private final RefreshTokenRepository refreshTokenRepository;
 
     /**
      * A Custom Logout method invalidating any tokens created during users session.
@@ -36,7 +39,13 @@ public class LogoutService implements LogoutHandler {
         var storedToken = tokenRepository.findByJwt(jwt)
                 .orElse(null);
         if (storedToken != null) {
+            var refreshTokens = refreshTokenRepository.findAllByUsername(storedToken.getUsername());
+            for (RefreshToken refreshToken : refreshTokens) {
+                refreshToken.setValid(false);
+                refreshToken.setExpired(true);
+            }
             storedToken.setExpired(true);
+            storedToken.setValid(false);
             tokenRepository.save(storedToken);
             SecurityContextHolder.clearContext();
         }
