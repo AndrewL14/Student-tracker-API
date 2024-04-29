@@ -19,6 +19,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Optional;
 
@@ -68,7 +69,7 @@ public class AuthenticationServiceTest {
         String password = "password";
         String mockToken = "mockToken";
         String encodedPassword = passwordEncoder.encode(password);
-        testTeacher.setStudents(new HashSet<>());
+        testTeacher.setStudents(new ArrayList<>());
         testTeacher.setUsername(username);
         testTeacher.setPassword(encodedPassword);
         // WHEN
@@ -90,7 +91,7 @@ public class AuthenticationServiceTest {
         String username = "james";
         String password = "Password";
         String mockToken = "mockToken";
-        testTeacher.setStudents(new HashSet<>());
+        testTeacher.setStudents(new ArrayList<>());
 
         // WHEN
         when(tokenService.generateJwt(any())).thenReturn(mockToken);
