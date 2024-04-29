@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.MockitoAnnotations.*;
 
 public class TeacherServiceTest {
-    private Teacher testTeacher = new Teacher("james", "passowrd", new HashSet<>());
+    private Teacher testTeacher = new Teacher("james", "passowrd", new ArrayList<>());
     private Student testStudent = new Student("Jhon Smith", 2, BigDecimal.ONE);
 
 
@@ -38,7 +38,7 @@ public class TeacherServiceTest {
     @Test
     public void getAllStudentsByTeacherUsername_ExistingTeacher_listOfStudents() {
         // GIVEN
-        Set<Student> students = new HashSet<>();
+        List<Student> students = new ArrayList<>();
         students.add(testStudent);
         testTeacher.setStudents(students);
 
@@ -68,7 +68,7 @@ public class TeacherServiceTest {
     @Test
     public void getStudentByName_validTeacherValidStudent_ListOfStudents() {
         // GIVEN
-        Set<Student> students = new HashSet<>();
+        List<Student> students = new ArrayList<>();
         students.add(testStudent);
         testTeacher.setStudents(students);
 
@@ -142,14 +142,13 @@ public class TeacherServiceTest {
     public void editExistingStudent_validRequest_ListOfStudents() {
         // GIVEN
         Long studentId = 1L;
-        Set<Student> students = new HashSet<>();
+        List<Student> students = new ArrayList<>();
         testStudent.setStudentId(studentId);
         students.add(testStudent);
         testTeacher.setStudents(students);
 
         EditStudentRequest request = new EditStudentRequest();
         request.setStudentId(studentId);
-        request.setGradeToChange(Optional.of(10.0));
         request.setNameToChange("kenny");
         request.setPeriodToChange(Optional.of(1));
 
@@ -164,7 +163,6 @@ public class TeacherServiceTest {
         assertEquals(1L, updatedStudent.getStudentId());
         assertEquals(1, response.size());
         assertEquals("kenny", updatedStudent.getName());
-        assertEquals(BigDecimal.valueOf(10.0), updatedStudent.getGrade());
         assertEquals(1, updatedStudent.getPeriod());
         Mockito.verify(teacherRepository, Mockito.times(1)).save(testTeacher);
         Mockito.verify(studentRepository, Mockito.times(1)).save(Mockito.any(Student.class));
@@ -186,14 +184,13 @@ public class TeacherServiceTest {
     public void editExistingStudent_IncompleteRequest_returnsUpdatedList() {
         // GIVEN
         Long studentId = 1L;
-        Set<Student> students = new HashSet<>();
+        List<Student> students = new ArrayList<>();
         testStudent.setStudentId(studentId);
         students.add(testStudent);
         testTeacher.setStudents(students);
 
         EditStudentRequest request = new EditStudentRequest();
         request.setStudentId(studentId);
-        request.setGradeToChange(Optional.of(10.0));
 
         // WHEN
         Mockito.when(teacherRepository.findByUsername(testTeacher.getUsername()))
@@ -206,7 +203,6 @@ public class TeacherServiceTest {
         assertEquals(1L, updatedStudent.getStudentId());
         assertEquals(1, response.size());
         assertEquals("Jhon Smith", updatedStudent.getName(), "expected name to remain the same");
-        assertEquals(BigDecimal.valueOf(10.0), updatedStudent.getGrade());
         assertEquals(2, updatedStudent.getPeriod(), "expected period to remain the same");
         Mockito.verify(teacherRepository, Mockito.times(1)).save(testTeacher);
         Mockito.verify(studentRepository, Mockito.times(1)).save(Mockito.any(Student.class));
@@ -216,7 +212,7 @@ public class TeacherServiceTest {
     public void deleteStudent_validRequest() {
         // GIVEN
         Long studentId = 1L;
-        Set<Student> students = new HashSet<>();
+        List<Student> students = new ArrayList<>();
         testStudent.setStudentId(studentId);
         students.add(testStudent);
         testTeacher.setStudents(students);

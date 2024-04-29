@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -27,7 +28,7 @@ public class TokenServiceTest {
     @InjectMocks
     private TokenService tokenService;
 
-    private final Teacher TEST_TEACHER = new Teacher("username", "password", new HashSet<>());
+    private final Teacher TEST_TEACHER = new Teacher("username", "password", new ArrayList<>());
 
     @BeforeEach
     public void setup() {

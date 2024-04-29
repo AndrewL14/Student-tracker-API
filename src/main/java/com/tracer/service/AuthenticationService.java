@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Objects;
 import java.util.Set;
@@ -58,7 +59,7 @@ public class AuthenticationService {
         Set<Role> authorities = new HashSet<>();
 
         authorities.add(userRole);
-        Teacher teacher = new Teacher(username, email, encodedPassword, new HashSet<>(),
+        Teacher teacher = new Teacher(username, email, encodedPassword, new ArrayList<>() ,
                 authorities);
         teacherService.saveNewTeacher(teacher);
         mailSenderService.sendEmailVerification(email);

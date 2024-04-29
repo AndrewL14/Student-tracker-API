@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Optional;
 
@@ -36,7 +37,7 @@ class MailSenderServiceTest {
     @InjectMocks
     private MailSenderService mailSenderService;
 
-    private static final Teacher TEST_TEACHER = new Teacher("username", "password", new HashSet<>());
+    private static final Teacher TEST_TEACHER = new Teacher("username", "password", new ArrayList<>());
 
     @BeforeEach
     public void setup() {

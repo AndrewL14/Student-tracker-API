@@ -49,7 +49,7 @@ public class StudentTrackerApiApplication {
 			student.setAssignments(List.of(assignment));
 			student.setPeriod(1);
 
-			Set<Student> temp = new HashSet<>();
+			List<Student> temp = new ArrayList<>();
 			temp.add(student);
 			Teacher teacher = new Teacher("james", passwordEncoder.encode("password") , "example@gmail.com", temp);
 			teacher.setAuthorities(authorities);

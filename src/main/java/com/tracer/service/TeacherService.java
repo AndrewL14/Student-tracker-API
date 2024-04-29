@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @Service
@@ -67,9 +68,9 @@ public class TeacherService implements UserDetailsService {
         Teacher teacher = teacherRepository.findByUsername(teacherUsername)
                 .orElseThrow(NullPointerException::new);
         Student studentToAdd = new Student(request.getName() , request.getPeriod(), BigDecimal.valueOf(100));
-        Set<Student> students = teacher.getStudents();
+        List<Student> students = teacher.getStudents();
         if (students.contains(studentToAdd)) throw new RuntimeException("Student Already Exist");
-        students.add(studentToAdd);
+        addStudentToList(students, studentToAdd);
         teacher.setStudents(students);
         teacherRepository.save(teacher);
         return students.parallelStream().toList();
@@ -84,18 +85,27 @@ public class TeacherService implements UserDetailsService {
         Teacher teacher = teacherRepository.findByUsername(teacherUsername)
                 .orElseThrow(() -> new IllegalArgumentException("Teacher not found"));
         logger.info(String.format("editing student with id: %d.", request.getStudentId()));
+        AtomicBoolean shouldResetOrder = new AtomicBoolean(false);
         List<Student> updatedStudents = teacher.getStudents().parallelStream()
                 .peek(student -> {
                     if (student.getStudentId().equals(request.getStudentId())) {
                         if (!request.getNameToChange().isEmpty()) {
                             student.setName(request.getNameToChange());
                         }
-                        request.getPeriodToChange().ifPresent(student::setPeriod);
+                        request.getPeriodToChange().ifPresent(period -> {
+                            if (!period.equals(student.getPeriod())) {
+                                shouldResetOrder.set(true);
+                                student.setPeriod(period);
+                            }
+                        });
                         studentRepository.save(student);
                     }
                 })
                 .collect(Collectors.toList());
-
+        if (shouldResetOrder.get()) {
+            sortStudentList(updatedStudents);
+        }
+        teacher.setStudents(updatedStudents);
         teacherRepository.save(teacher);
 
         return updatedStudents;
@@ -159,5 +169,18 @@ public class TeacherService implements UserDetailsService {
     public UserDetails saveNewTeacher(Teacher teacher) {
         logger.info("Saving new teacher.");
         return teacherRepository.save(teacher);
+    }
+
+    private void addStudentToList(List<Student> students, Student studentToAdd) {
+        int index = 0;
+        while (index < students.size() && students.get(index).getPeriod() > studentToAdd.getPeriod()) {
+            index++;
+        }
+        students.add(index, studentToAdd);
+    }
+
+    private void sortStudentList(List<Student> students) {
+        Comparator<Student> periodComparator = Comparator.comparingInt(Student::getPeriod);
+        students.sort(periodComparator);
     }
 }
