@@ -11,6 +11,7 @@ import java.util.Optional;
 @ToString
 public class EditStudentRequest {
     private Long studentId;
+    private int period;e
     private Optional<Integer> periodToChange = Optional.empty();
     private String nameToChange = "";
 }

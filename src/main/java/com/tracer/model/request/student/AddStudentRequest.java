@@ -12,5 +12,6 @@ import java.math.BigDecimal;
 public class AddStudentRequest {
     private String name;
     private Integer period;
+    private String subject;
     private BigDecimal grade;
 }
