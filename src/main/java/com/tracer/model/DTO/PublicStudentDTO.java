@@ -1,13 +1,14 @@
 package com.tracer.model.DTO;
 
-import com.tracer.model.assignments.Assignment;
+import com.tracer.model.assignments.Assignments;
 
-import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 
-public record PublicStudent(
+public record PublicStudentDTO(
+        Long id,
         String name,
-        BigDecimal grade,
-        List<Assignment> assignments
+        int period,
+        Assignments assignments
 ) {
 }
