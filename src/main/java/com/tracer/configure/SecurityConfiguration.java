@@ -1,5 +1,7 @@
 package com.tracer.configure;
 
+import com.tracer.service.StudentService;
+import com.tracer.service.TeacherService;
 import com.tracer.util.RSAKeyProperties;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
@@ -31,6 +33,8 @@ import com.nimbusds.jose.jwk.source.JWKSource;
 import com.nimbusds.jose.proc.SecurityContext;
 import org.springframework.security.web.authentication.logout.LogoutHandler;
 
+import java.util.Arrays;
+
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
@@ -38,7 +42,8 @@ import org.springframework.security.web.authentication.logout.LogoutHandler;
 public class SecurityConfiguration {
 
     private final RSAKeyProperties keys;
-    private final UserDetailsService userDetailsService;
+    private final TeacherService teacherService;
+    private final StudentService studentService;
     private final LogoutHandler logoutHandler;
 
     @Bean
@@ -47,11 +52,16 @@ public class SecurityConfiguration {
     }
 
     @Bean
-    public AuthenticationManager authManager(){
-        DaoAuthenticationProvider daoProvider = new DaoAuthenticationProvider();
-        daoProvider.setUserDetailsService(userDetailsService);
-        daoProvider.setPasswordEncoder(passwordEncoder());
-        return new ProviderManager(daoProvider);
+    public AuthenticationManager authManager() {
+        DaoAuthenticationProvider teacherAuthProvider = new DaoAuthenticationProvider();
+        teacherAuthProvider.setUserDetailsService(teacherService);
+        teacherAuthProvider.setPasswordEncoder(passwordEncoder());
+
+        DaoAuthenticationProvider studentAuthProvider = new DaoAuthenticationProvider();
+        studentAuthProvider.setUserDetailsService(studentService);
+        studentAuthProvider.setPasswordEncoder(passwordEncoder());
+
+        return new ProviderManager(Arrays.asList(teacherAuthProvider, studentAuthProvider));
     }
 
     @Bean
