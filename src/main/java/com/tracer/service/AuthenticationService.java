@@ -1,10 +1,12 @@
 package com.tracer.service;
 
+import com.tracer.model.Student;
+import com.tracer.model.response.StudentLoginResponse;
 import com.tracer.model.tokens.EmailToken;
 import com.tracer.model.tokens.PasswordResetToken;
 import com.tracer.model.Role;
 import com.tracer.model.Teacher;
-import com.tracer.model.response.LoginResponse;
+import com.tracer.model.response.TeacherLoginResponse;
 import com.tracer.repository.AuthorityRepository;
 import com.tracer.repository.tokens.EmailTokenRepository;
 import com.tracer.repository.tokens.PasswordResetTokenRepository;
@@ -16,19 +18,16 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 
 @Service
-@Transactional
 public class AuthenticationService {
     @Autowired
     private TeacherService teacherService;
+    @Autowired
+    private StudentService studentService;
     @Autowired
     private AuthorityRepository roleRepository;
     @Autowired
@@ -51,7 +50,7 @@ public class AuthenticationService {
      * @param password A string of characters to be used.
      * @return A loginResponse containing a new List of students, and a valid JWT.
      */
-    public LoginResponse registerUser(String username, String email, String password){
+    public TeacherLoginResponse registerUser(String username, String email, String password){
         logger.info(String.format("Registering new user with username: %s", username));
         String encodedPassword = passwordEncoder.encode(password);
         Role userRole = roleRepository.findByAuthority("TEACHER").get();
@@ -59,7 +58,7 @@ public class AuthenticationService {
         Set<Role> authorities = new HashSet<>();
 
         authorities.add(userRole);
-        Teacher teacher = new Teacher(username, email, encodedPassword, new ArrayList<>() ,
+        Teacher teacher = new Teacher(username, email, encodedPassword,
                 authorities);
         teacherService.saveNewTeacher(teacher);
         mailSenderService.sendEmailVerification(email);
@@ -68,7 +67,7 @@ public class AuthenticationService {
         );
         String jwt = tokenService.generateJwt(authentication);
         String refreshToken = tokenService.generateRefreshToken(authentication);
-        return new LoginResponse(teacher.getUsername(), teacher.getEmail(),
+        return new TeacherLoginResponse(teacher.getUsername(), teacher.getEmail(),
                 jwt, refreshToken);
     }
 
@@ -79,7 +78,7 @@ public class AuthenticationService {
      * @param password A string of characters to be used.
      * @return A loginResponse containing a new List of students, and a valid JWT.
      */
-    public LoginResponse loginUserByUsername(String username, String password){
+    public TeacherLoginResponse loginTeacherByUsername(String username, String password){
         logger.info(String.format("logging in user with username: %s", username));
         Authentication authentication = authenticationManager.authenticate(
                    new UsernamePasswordAuthenticationToken(username, password)
@@ -87,7 +86,7 @@ public class AuthenticationService {
         String jwt = tokenService.generateJwt(authentication);
         String refreshToken = tokenService.generateRefreshToken(authentication);
         Teacher teacher = (Teacher) teacherService.loadUserByUsername(username);
-        return new LoginResponse(teacher.getUsername(), teacher.getEmail(),
+        return new TeacherLoginResponse(teacher.getUsername(), teacher.getEmail(),
                 jwt, refreshToken);
     }
 
@@ -97,16 +96,27 @@ public class AuthenticationService {
      * @param password String of characters
      * @return A loginResponse containing a JWT, username, and email (All string objects)
      */
-    public LoginResponse loginUserByEmail(String email, String password) {
-        logger.info(String.format("logging in user with email: %s", email));
+    public TeacherLoginResponse loginTeacherByEmail(String email, String password) {
+        logger.info(String.format("logging in teacher with email: %s", email));
         Teacher teacher = (Teacher) teacherService.loadUserByEmail(email);
         Authentication authentication = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(teacher.getUsername(), password)
         );
         String jwt = tokenService.generateJwt(authentication);
         String refreshToken = tokenService.generateRefreshToken(authentication);
-        return new LoginResponse(teacher.getUsername(), teacher.getEmail(),
+        return new TeacherLoginResponse(teacher.getUsername(), teacher.getEmail(),
                 jwt, refreshToken);
+    }
+
+    public StudentLoginResponse loginStudentByEmail(String email, String password) {
+        logger.info(String.format("logging in student with email: %s", email));
+        Student student = (Student) studentService.loadUserByUsername(email);
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(email, password)
+        );
+        String jwt = tokenService.generateJwt(authentication);
+        String refreshToken = tokenService.generateRefreshToken(authentication);
+        return new StudentLoginResponse(student.getName(), jwt, refreshToken);
     }
 
     /**
@@ -159,7 +169,7 @@ public class AuthenticationService {
      * @param password new password for the user.
      * @return A username, email, and new JWT for the user.
      */
-    public LoginResponse completePasswordReset(String token, String password) {
+    public TeacherLoginResponse completePasswordReset(String token, String password) {
         logger.info("completing password reset process");
         PasswordResetToken resetToken = resetTokenRepository.findByToken(token)
                 .orElseThrow(NullPointerException::new);
@@ -177,7 +187,7 @@ public class AuthenticationService {
         String jwt = tokenService.generateJwt(authentication);
         String refreshToken = tokenService.generateRefreshToken(authentication);
         resetTokenRepository.deleteAllByTeacher(teacherToUpdate);
-        return new LoginResponse(teacherToUpdate.getUsername(), teacherToUpdate.getEmail(),
+        return new TeacherLoginResponse(teacherToUpdate.getUsername(), teacherToUpdate.getEmail(),
                 jwt, refreshToken);
     }
 
