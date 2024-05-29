@@ -11,6 +11,7 @@ import java.time.LocalDate;
 @ToString
 public class AddAssignmentRequest {
     private Long studentId;
+    private int period;
     private String assignmentName;
     private double grade;
     private boolean completed;
