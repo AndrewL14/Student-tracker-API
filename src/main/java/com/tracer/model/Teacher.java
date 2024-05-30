@@ -26,7 +26,7 @@ public class Teacher implements UserDetails {
     private String email;
     private String password;
     @JsonManagedReference
-    @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL, fetch = FetchType.EAGER, orphanRemoval = true)
+    @OneToMany(mappedBy = "teacher", cascade = CascadeType.ALL, fetch = FetchType.EAGER)
     private List<Student> students;
     private Set<String> subjects;
     @ManyToMany(fetch = FetchType.EAGER)
