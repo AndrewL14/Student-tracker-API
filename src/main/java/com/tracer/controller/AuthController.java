@@ -1,12 +1,13 @@
 package com.tracer.controller;
 
+import com.tracer.model.Student;
 import com.tracer.model.request.authentication.BasicLoginRequest;
 import com.tracer.model.request.authentication.CompletePasswordResetRequest;
 import com.tracer.model.request.authentication.EmailLoginRequest;
 import com.tracer.model.request.authentication.RegistrationRequest;
-import com.tracer.model.response.LoginResponse;
+import com.tracer.model.response.StudentLoginResponse;
+import com.tracer.model.response.TeacherLoginResponse;
 import com.tracer.service.AuthenticationService;
-import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,22 +22,29 @@ public class AuthController {
     private AuthenticationService authService;
 
     @PostMapping("/register")
-    public ResponseEntity<LoginResponse> registerUser(@RequestBody RegistrationRequest request) {
-        return new ResponseEntity<LoginResponse>(
+    public ResponseEntity<TeacherLoginResponse> registerUser(@RequestBody RegistrationRequest request) {
+        return new ResponseEntity<TeacherLoginResponse>(
                 authService.registerUser(request.getUsername(), request.getEmail() , request.getPassword()), HttpStatus.OK);
     }
 
     @PostMapping("/login/basic")
-    public ResponseEntity<LoginResponse>  loginUserByUsername(@RequestBody BasicLoginRequest request) {
-        return new ResponseEntity<LoginResponse>(
-          authService.loginUserByUsername(request.getUsername(), request.getPassword()), HttpStatus.OK
+    public ResponseEntity<TeacherLoginResponse>  loginUserByUsername(@RequestBody BasicLoginRequest request) {
+        return new ResponseEntity<TeacherLoginResponse>(
+          authService.loginTeacherByUsername(request.getUsername(), request.getPassword()), HttpStatus.OK
         );
     }
 
     @PostMapping("/login/email")
-    public ResponseEntity<LoginResponse>  loginUserByEmail(@RequestBody EmailLoginRequest request) {
-        return new ResponseEntity<LoginResponse>(
-                authService.loginUserByEmail(request.getEmail(), request.getPassword()), HttpStatus.OK
+    public ResponseEntity<TeacherLoginResponse>  loginUserByEmail(@RequestBody EmailLoginRequest request) {
+        return new ResponseEntity<TeacherLoginResponse>(
+                authService.loginTeacherByEmail(request.getEmail(), request.getPassword()), HttpStatus.OK
+        );
+    }
+
+    @PostMapping("/student/login")
+    public ResponseEntity<StudentLoginResponse> studentLogin(@RequestBody EmailLoginRequest request) {
+        return new ResponseEntity<StudentLoginResponse>(
+                authService.loginStudentByEmail(request.getEmail() , request.getPassword()), HttpStatus.OK
         );
     }
 
@@ -57,8 +65,8 @@ public class AuthController {
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<LoginResponse> completePasswordReset(@RequestBody CompletePasswordResetRequest request) {
-        return new ResponseEntity<LoginResponse>(
+    public ResponseEntity<TeacherLoginResponse> completePasswordReset(@RequestBody CompletePasswordResetRequest request) {
+        return new ResponseEntity<TeacherLoginResponse>(
                 authService.completePasswordReset(request.getToken() , request.getPassword()), HttpStatus.OK
         );
     }
