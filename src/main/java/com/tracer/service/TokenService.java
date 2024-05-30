@@ -14,7 +14,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jwt.*;
 import org.springframework.stereotype.Service;
 
@@ -22,8 +21,6 @@ import java.security.SecureRandom;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.util.Base64;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -152,7 +149,6 @@ public class TokenService {
      * @param auth used to get the username.
      */
     public void validateJwt(HttpServletRequest servletRequest, Authentication auth) {
-        logger.info("made it here");
         String jwt = JwtUtils.extractJwtFromRequest(servletRequest);
         var token = tokenRepository.findByUsernameAndJwt(auth.getName() , jwt)
                 .orElseThrow(ExpiredTokenException::new);
