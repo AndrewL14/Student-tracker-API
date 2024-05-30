@@ -28,7 +28,7 @@ public class TokenServiceTest {
     @InjectMocks
     private TokenService tokenService;
 
-    private final Teacher TEST_TEACHER = new Teacher("username", "password", new ArrayList<>());
+    private final Teacher TEST_TEACHER = new Teacher("username", "password");
 
     @BeforeEach
     public void setup() {

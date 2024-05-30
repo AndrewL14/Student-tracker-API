@@ -37,7 +37,7 @@ class MailSenderServiceTest {
     @InjectMocks
     private MailSenderService mailSenderService;
 
-    private static final Teacher TEST_TEACHER = new Teacher("username", "password", new ArrayList<>());
+    private static final Teacher TEST_TEACHER = new Teacher("username", "password");
 
     @BeforeEach
     public void setup() {
