@@ -161,7 +161,8 @@ public class StudentService implements UserDetailsService {
         Student student = studentRepository.findById(request.getStudentId())
                 .orElseThrow(() -> new EntityNotFoundException("Student not found with ID: " + request.getStudentId()));
         List<Assignments> originalList = student.getAssignments();
-        Assignments assignments = originalList.get(request.getPeriod());
+        Assignments assignments = originalList.stream().filter(as -> as.getPeriod() == request.getPeriod()).findFirst()
+                .orElseThrow(() -> new IllegalArgumentException(String.format("no Assignments for period: %d", request.getPeriod())));
         boolean removed = assignments.getAssignments().removeIf(assignment ->
                 Objects.equals(assignment.getId(), request.getAssignmentId()));
         if (removed) {
