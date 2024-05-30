@@ -1,34 +1,47 @@
 package com.tracer.service;
 
+import com.tracer.converter.ModelConverter;
+import com.tracer.model.DTO.PrivateStudentDTO;
 import com.tracer.model.Student;
 import com.tracer.model.assignments.Assignment;
+import com.tracer.model.assignments.Assignments;
 import com.tracer.model.request.assignment.AddAssignmentRequest;
 import com.tracer.model.request.assignment.DeleteAssignmentRequest;
 import com.tracer.model.request.assignment.EditAssignmentRequest;
-import com.tracer.repository.AssignmentRepository;
+import com.tracer.model.request.assignment.UpdateAssignmentStatusRequest;
+import com.tracer.repository.assignments.AssignmentRepository;
 import com.tracer.repository.StudentRepository;
+import com.tracer.repository.assignments.AssignmentsRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.Objects;
+import java.util.*;
 
 @Service
-public class StudentService {
+@Transactional
+public class StudentService implements UserDetailsService {
     @Autowired
     private StudentRepository studentRepository;
     @Autowired
     private AssignmentRepository assignmentRepository;
+    @Autowired
+    private AssignmentsRepository assignmentsRepository;
 
     /**
      * Gets a specific student by their ID.
      * @param id Database Id
      * @return The student associated with the ID.
      */
-    public Student getStudentById(Long id) {
-        return studentRepository.findById(id)
-                .orElseThrow(NullPointerException::new);
+    public PrivateStudentDTO getStudentById(Long id) {
+        return ModelConverter.studentToPrivateDTO(
+                studentRepository.findById(id)
+                        .orElseThrow(NullPointerException::new)
+        );
     }
 
     /**
@@ -36,7 +49,7 @@ public class StudentService {
      * @param id Database id for the student.
      * @return a List of Assignments.
      */
-    public List<Assignment> getAllAssignmentsByStudentId(Long id) {
+    public List<Assignments> getAllAssignmentsByStudentId(Long id) {
         return studentRepository
                 .findById(id)
                 .orElseThrow(NullPointerException::new)
@@ -49,43 +62,71 @@ public class StudentService {
      * @param request Information for a new assignment object.
      * @return Updated list of assignments.
      */
-    public List<Assignment> addNewAssignment(AddAssignmentRequest request) {
+    public Assignments addNewAssignment(AddAssignmentRequest request) {
         Student student = studentRepository.findById(request.getStudentId())
-                .orElseThrow(NullPointerException::new);
-        List<Assignment> assignmentsToUpdate = student.getAssignments();
+                .orElseThrow(() -> new NoSuchElementException("Student not found"));
 
-        assignmentsToUpdate.add(assignmentRepository.save(new Assignment(
+        List<Assignments> originalList = student.getAssignments();
+        Assignments assignments = null;
+
+        for (Assignments assignmentList : originalList) {
+            if (assignmentList.getPeriod() == request.getPeriod()) {
+                assignments = assignmentList;
+                break;
+            }
+        }
+
+        Assignment newAssignment = new Assignment(
                 request.getAssignmentName(),
                 request.getGrade(),
                 request.isCompleted(),
                 false,
                 request.getDueDate(),
-                request.getAssignmentType().toUpperCase()))
+                request.getAssignmentType().toUpperCase(),
+                assignments
         );
-        student.setAssignments(assignmentsToUpdate);
-        student.setGrade(BigDecimal.valueOf(updateAverageGrade(assignmentsToUpdate)));
+        assignmentRepository.save(newAssignment);
+
+        List<Assignment> assignmentsToUpdate = new ArrayList<>(assignments.getAssignments());
+        assignmentsToUpdate.add(newAssignment);
+        assignments.setAssignments(assignmentsToUpdate);
+        assignments.setAverageGrade(updateAverageGrade(assignmentsToUpdate));
+
+        student.setAssignments(originalList);
         studentRepository.save(student);
-        return assignmentsToUpdate;
+
+        return assignments;
     }
 
     /**
      * preforms a status update on the assignment to mark the assignment as complete.
-     * @param studentId A students Database ID.
-     * @param assignmentId The specific assignment ID.
+     * @param request user request containing the period, student, and assignmentId.
      * @return the updated List of assignments.
      */
-    public List<Assignment> updateCompleteStatus(Long studentId, Long assignmentId) {
-        Student student = studentRepository.findById(studentId)
-                .orElseThrow(NullPointerException::new);
-        student.getAssignments().stream()
-                .filter(a -> Objects.equals(a.getId() , assignmentId))
+    public List<Assignment> updateCompleteStatus(UpdateAssignmentStatusRequest request, String teacherUsername) {
+        Student student = studentRepository.findById(request.getStudentId())
+                .orElseThrow(() -> new IllegalStateException("Student not found"));
+
+        List<Assignments> originalList = student.getAssignments();
+
+        if (request.getPeriod() < 0 || request.getPeriod() >= originalList.size()) {
+            throw new IllegalStateException("No assignments found for the specified period");
+        }
+
+        Assignments assignmentList = originalList.get(request.getPeriod());
+
+        Assignment assignmentToUpdate = assignmentList.getAssignments()
+                .stream()
+                .filter(a -> Objects.equals(a.getId(), request.getAssignmentId()))
                 .findFirst()
-                .ifPresent(assignment -> {
-                    assignment.setCompleted(true);
-                    assignmentRepository.save(assignment);
-                });
+                .orElseThrow(() -> new IllegalStateException("Assignment not found"));
+
+        assignmentToUpdate.setCompleted(true);
+        assignmentRepository.save(assignmentToUpdate);
+
         studentRepository.save(student);
-        return student.getAssignments();
+
+        return assignmentList.getAssignments();
     }
 
     /**
@@ -94,24 +135,21 @@ public class StudentService {
      * @return Update list of assignments.
      */
     public List<Assignment> editAssignment(EditAssignmentRequest request) {
-        Student student = studentRepository.findById(request.getStudentId())
-                .orElseThrow(NullPointerException::new);
-        List<Assignment> assignmentsToUpdate = student.getAssignments().stream()
-                .peek(assignment -> {
-                    if (assignment.getId().equals(request.getAssignmentId())) {
-                        if (!request.getAssignmentNameToChange().isEmpty())
-                            assignment.setName(request.getAssignmentNameToChange());
-                        request.getGradeToChange().ifPresent(grade -> {assignment.setGrade(grade);});
-                        request.getDueDateToChange().ifPresent(date -> {assignment.setDueDate(date);});
-                        if (!request.getAssignmentTypeToChange().isEmpty()) {
-                            assignment.setAssignmentType(request.getAssignmentTypeToChange());
-                        }
-                        assignmentRepository.save(assignment);
-                    }
-                }).toList();
-        student.setGrade(BigDecimal.valueOf(updateAverageGrade(assignmentsToUpdate)));
-        studentRepository.save(student);
-        return assignmentsToUpdate;
+        Assignment assignment = assignmentRepository.findById(request.getAssignmentId())
+                .orElseThrow(() -> new EntityNotFoundException("Assignment not found with ID: " + request.getAssignmentId()));
+        if (!request.getAssignmentNameToChange().isEmpty()) {
+            assignment.setName(request.getAssignmentNameToChange());
+        }
+        request.getGradeToChange().ifPresent(assignment::setGrade);
+        request.getDueDateToChange().ifPresent(assignment::setDueDate);
+        if (!request.getAssignmentTypeToChange().isEmpty()) {
+            assignment.setAssignmentType(request.getAssignmentTypeToChange());
+        }
+        assignmentRepository.save(assignment);
+        Assignments assignments = assignment.getAssignmentList();
+        assignments.setAverageGrade(updateAverageGrade(assignments.getAssignments()));
+        assignmentsRepository.save(assignments);
+        return assignments.getAssignments();
     }
 
     /**
@@ -121,15 +159,23 @@ public class StudentService {
      */
     public List<Assignment> deleteAssignment(DeleteAssignmentRequest request) {
         Student student = studentRepository.findById(request.getStudentId())
-                .orElseThrow(NullPointerException::new);
-        List<Assignment> assignments = student.getAssignments();
-        assignments.removeIf(assignment -> Objects.equals(assignment.getId() , request.getAssignmentId()));
-        assignmentRepository.deleteById(request.getAssignmentId());
-        student.setAssignments(assignments);
-        student.setGrade(BigDecimal.valueOf(updateAverageGrade(assignments)));
+                .orElseThrow(() -> new EntityNotFoundException("Student not found with ID: " + request.getStudentId()));
+        List<Assignments> originalList = student.getAssignments();
+        Assignments assignments = originalList.get(request.getPeriod());
+        boolean removed = assignments.getAssignments().removeIf(assignment ->
+                Objects.equals(assignment.getId(), request.getAssignmentId()));
+        if (removed) {
+            assignmentRepository.deleteById(request.getAssignmentId());
+        } else {
+            throw new EntityNotFoundException("Assignment not found with ID: " + request.getAssignmentId());
+        }
+        assignments.setAverageGrade(updateAverageGrade(assignments.getAssignments()));
+        student.setAssignments(originalList);
         studentRepository.save(student);
-        return assignments;
+        return assignments.getAssignments();
     }
+
+
 
     /**
      * Updates the average grade of all assignments.
@@ -142,5 +188,11 @@ public class StudentService {
             total += assignment.getGrade();
         }
         return  total / assignments.size();
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
+        Optional<Student> studentOpt = studentRepository.findByEmail(email);
+        return studentOpt.orElseThrow(() -> new UsernameNotFoundException("Invalid Credentials"));
     }
 }
