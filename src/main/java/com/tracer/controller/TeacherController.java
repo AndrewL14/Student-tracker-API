@@ -1,7 +1,11 @@
 package com.tracer.controller;
 
+import com.tracer.model.DTO.PublicStudentDTO;
+import com.tracer.model.DTO.TeacherStudentList;
 import com.tracer.model.Student;
+import com.tracer.model.assignments.Assignments;
 import com.tracer.model.request.student.AddStudentRequest;
+import com.tracer.model.request.student.DeleteStudentRequest;
 import com.tracer.model.request.student.EditStudentRequest;
 import com.tracer.service.TeacherService;
 import com.tracer.service.TokenService;
@@ -24,41 +28,41 @@ public class TeacherController {
     private TokenService tokenService;
 
     @GetMapping("/all")
-    public ResponseEntity<List<Student>> getAllStudents(HttpServletRequest servletRequest, Authentication authentication) {
+    public ResponseEntity<TeacherStudentList> getAllStudents(HttpServletRequest servletRequest, Authentication authentication) {
         tokenService.validateJwt(servletRequest, authentication);
-        return new ResponseEntity<List<Student>>(
+        return new ResponseEntity<TeacherStudentList>(
                 service.getAllStudentsByTeacherUsername(authentication.getName()),
                 HttpStatus.OK
         );
     }
     @GetMapping("/unique{studentName}")
-    public ResponseEntity<List<Student>> getStudentsByName(@RequestParam String studentName,
-                                                           HttpServletRequest servletRequest, Authentication authentication) {
+    public ResponseEntity<PublicStudentDTO> getStudentsByName(@RequestParam String studentName,
+                                                              HttpServletRequest servletRequest, Authentication authentication) {
         tokenService.validateJwt(servletRequest, authentication);
-        return new ResponseEntity<List<Student>>(
-                service.getStudentsByName(authentication.getName() , studentName),
+        return new ResponseEntity<PublicStudentDTO>(
+                service.getStudentByName(authentication.getName() , studentName),
                 HttpStatus.OK
         );
     }
     @PutMapping("/add")
-    public ResponseEntity<List<Student>> addStudent(@RequestBody AddStudentRequest request,
+    public ResponseEntity<TeacherStudentList> addStudent(@RequestBody AddStudentRequest request,
                                                     HttpServletRequest servletRequest, Authentication authentication) {
         tokenService.validateJwt(servletRequest, authentication);
-        return new ResponseEntity<List<Student>>(service.addStudent(request, authentication.getName()),
+        return new ResponseEntity<TeacherStudentList>(service.addStudent(request, authentication.getName()),
                 HttpStatus.OK);
     }
     @PostMapping("/edit")
-    public ResponseEntity<List<Student>> editExistingStudent(@RequestBody EditStudentRequest request,
+    public ResponseEntity<PublicStudentDTO> editExistingStudent(@RequestBody EditStudentRequest request,
                                                              HttpServletRequest servletRequest, Authentication authentication) {
         tokenService.validateJwt(servletRequest, authentication);
-        return new ResponseEntity<List<Student>>(service.editExistingStudent(request, authentication.getName()),
+        return new ResponseEntity<PublicStudentDTO>(service.editExistingStudent(request),
                 HttpStatus.OK);
     }
-    @DeleteMapping("/delete{studentId}")
-    public ResponseEntity<?> deleteExistingStudent(@RequestParam Long studentId,
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteExistingStudent(@RequestBody DeleteStudentRequest request,
                                                    HttpServletRequest servletRequest, Authentication authentication) {
         tokenService.validateJwt(servletRequest, authentication);
-            service.deleteStudent(studentId, authentication.getName());
+            service.deleteStudent(request, authentication.getName());
         return new ResponseEntity<>("", HttpStatus.OK);
     }
 }
