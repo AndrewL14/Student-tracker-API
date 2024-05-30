@@ -13,6 +13,7 @@ import com.tracer.repository.AuthorityRepository;
 import com.tracer.repository.StudentRepository;
 import com.tracer.repository.TeacherRepository;
 import com.tracer.repository.assignments.AssignmentsRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
@@ -100,7 +101,7 @@ public class TeacherServiceTest {
 
         // WHEN
         // THEN
-        assertThrows(NullPointerException.class, () -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             service.getStudentByName(invalidTeacherUsername, invalidStudentName);
         });
     }
@@ -116,7 +117,7 @@ public class TeacherServiceTest {
         PublicStudentDTO response = service.getStudentByName(testTeacher.getUsername() , invalidStudentName);
 
         // THEN
-        assertNotNull(response);
+        assertNull(response);
     }
 
     @Test
@@ -149,7 +150,7 @@ public class TeacherServiceTest {
 
         // WHEN
         // THEN
-        assertThrows(NullPointerException.class, () -> {
+        assertThrows(IllegalArgumentException.class, () -> {
             service.addStudent(request,"invalidTeacher");
         });
     }
@@ -157,11 +158,20 @@ public class TeacherServiceTest {
     @Test
     public void editExistingStudent_validRequest_ListOfStudents() {
         // GIVEN
+        Set<String> subjects = new HashSet<>();
+        subjects.add("math");
+        testTeacher.setSubjects(subjects);
+
+
         Long studentId = 1L;
         List<Student> students = new ArrayList<>();
         testStudent.setStudentId(studentId);
         students.add(testStudent);
         testTeacher.setStudents(students);
+        testStudent.setTeacher(testTeacher);
+
+        Assignments assignments = new Assignments("math", 1, testStudent);
+        testStudent.setAssignments(List.of(assignments));
 
         EditStudentRequest request = new EditStudentRequest();
         request.setStudentId(studentId);
@@ -169,8 +179,9 @@ public class TeacherServiceTest {
         request.setPeriodToChange(Optional.of(1));
 
         // WHEN
-        Mockito.when(teacherRepository.findByUsername(Mockito.any()))
-                .thenReturn(Optional.ofNullable(testTeacher));
+        Mockito.when(studentRepository.findById(studentId)).thenReturn(
+                Optional.of(testStudent)
+        );
         PublicStudentDTO response = service.editExistingStudent(request);
 
         // THEN
@@ -186,7 +197,7 @@ public class TeacherServiceTest {
 
         // WHEN
         // THEN
-        assertThrows(IllegalArgumentException.class, () -> {
+        assertThrows(EntityNotFoundException.class, () -> {
             service.editExistingStudent(invalidRequest);
         });
     }
