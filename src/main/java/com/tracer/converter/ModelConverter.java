@@ -25,6 +25,7 @@ public class ModelConverter {
     }
 
     public static PublicStudentDTO studentToPublicDTO(Student student, Set<String> subjects) {
+        if (subjects == null || subjects.isEmpty()) throw new IllegalArgumentException("subjects is empty");
         Assignments selectedAssignment = student.getAssignments().stream()
                 .filter(assignment -> subjects.contains(assignment.getSubject()))
                 .findFirst()
