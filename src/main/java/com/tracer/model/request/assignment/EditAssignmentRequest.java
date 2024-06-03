@@ -13,6 +13,7 @@ import java.util.Optional;
 public class EditAssignmentRequest {
     private Long studentId;
     private Long assignmentId;
+    private int period;
     private String assignmentNameToChange = "";
     private Optional<Double> gradeToChange = Optional.empty();
     private Optional<LocalDate> dueDateToChange = Optional.empty();

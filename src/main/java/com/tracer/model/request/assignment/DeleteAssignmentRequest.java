@@ -12,4 +12,5 @@ import lombok.Setter;
 public class DeleteAssignmentRequest {
     private Long studentId;
     private Long assignmentId;
+    private int period;
 }

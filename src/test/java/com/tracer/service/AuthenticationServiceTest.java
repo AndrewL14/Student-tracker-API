@@ -4,7 +4,7 @@ import com.tracer.model.tokens.EmailToken;
 import com.tracer.model.tokens.PasswordResetToken;
 import com.tracer.model.Role;
 import com.tracer.model.Teacher;
-import com.tracer.model.response.LoginResponse;
+import com.tracer.model.response.TeacherLoginResponse;
 import com.tracer.repository.AuthorityRepository;
 import com.tracer.repository.tokens.EmailTokenRepository;
 import com.tracer.repository.tokens.PasswordResetTokenRepository;
@@ -20,7 +20,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -77,7 +76,7 @@ public class AuthenticationServiceTest {
         when(passwordEncoder.encode(password)).thenReturn(encodedPassword);
         when(authorityRepository.findByAuthority("TEACHER")).thenReturn(Optional.of(role));
         when(teacherService.saveNewTeacher(any())).thenReturn(testTeacher);
-        LoginResponse response = authenticationService.registerUser(username, email, password);
+        TeacherLoginResponse response = authenticationService.registerUser(username, email, password);
 
         // THEN
         assertNotNull(response, "expected response to NOT be null");
@@ -96,7 +95,7 @@ public class AuthenticationServiceTest {
         // WHEN
         when(tokenService.generateJwt(any())).thenReturn(mockToken);
         when(teacherService.loadUserByUsername(username)).thenReturn(testTeacher);
-        LoginResponse response = authenticationService.loginUserByUsername(username, password);
+        TeacherLoginResponse response = authenticationService.loginTeacherByUsername(username, password);
 
         // THEN
         assertNotNull(response);
@@ -121,7 +120,7 @@ public class AuthenticationServiceTest {
 
         // THEN
         assertThrows(NullPointerException.class, ()-> {
-            LoginResponse result = authenticationService.loginUserByUsername(username, password);
+            TeacherLoginResponse result = authenticationService.loginTeacherByUsername(username, password);
         });
         verify(tokenService).generateJwt(any());
         verify(teacherService).loadUserByUsername(username);
@@ -219,7 +218,7 @@ public class AuthenticationServiceTest {
 
         // WHEN
         when(passwordResetTokenRepository.findByToken("12345")).thenReturn(Optional.of(passwordResetToken));
-        LoginResponse response = authenticationService.completePasswordReset(validToken, newPassword);
+        TeacherLoginResponse response = authenticationService.completePasswordReset(validToken, newPassword);
 
         // THEN
         assertNotNull(response);

@@ -1,11 +1,20 @@
 package com.tracer.service;
 
+import com.tracer.converter.ModelConverter;
+import com.tracer.model.DTO.PublicStudentDTO;
+import com.tracer.model.DTO.TeacherStudentList;
+import com.tracer.model.Role;
 import com.tracer.model.Student;
 import com.tracer.model.Teacher;
+import com.tracer.model.assignments.Assignments;
 import com.tracer.model.request.student.AddStudentRequest;
+import com.tracer.model.request.student.DeleteStudentRequest;
 import com.tracer.model.request.student.EditStudentRequest;
+import com.tracer.repository.AuthorityRepository;
 import com.tracer.repository.StudentRepository;
 import com.tracer.repository.TeacherRepository;
+import com.tracer.repository.assignments.AssignmentsRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,10 +24,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.math.BigDecimal;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -27,6 +33,10 @@ public class TeacherService implements UserDetailsService {
     private TeacherRepository teacherRepository;
     @Autowired
     private StudentRepository studentRepository;
+    @Autowired
+    private AuthorityRepository authorityRepository;
+    @Autowired
+    private AssignmentsRepository assignmentsRepository;
     private final Logger logger = LoggerFactory.getLogger(TeacherService.class);
 
     /**
@@ -34,11 +44,11 @@ public class TeacherService implements UserDetailsService {
      * @param username Teacher unique username
      * @return a list of students matching the teacher.
      */
-    public List<Student> getAllStudentsByTeacherUsername(String username) {
+    public TeacherStudentList getAllStudentsByTeacherUsername(String username) {
         logger.info(String.format("Getting all students associated with teacher: %s", username));
         Teacher teacher = teacherRepository.findByUsername(username)
                 .orElseThrow(NullPointerException::new);
-        return teacher.getStudents().parallelStream().toList();
+        return ModelConverter.teacherStudentListToDTO(teacher.getStudents(), teacher.getSubjects());
     }
 
     /**
@@ -48,14 +58,25 @@ public class TeacherService implements UserDetailsService {
      * @param studentName student's full name
      * @return A list of students matching studentName
      */
-    public List<Student> getStudentsByName(String teacherUsername, String studentName) {
+    public PublicStudentDTO getStudentByName(String teacherUsername, String studentName) {
         logger.info(String.format("Getting student with name %s associated with %s.", studentName, teacherUsername));
-        Teacher teacher = teacherRepository.findByUsername(teacherUsername)
-                .orElseThrow(NullPointerException::new);
 
-        return teacher.getStudents().parallelStream()
-                .filter(student -> Objects.equals(student.getName(), studentName))
-                .collect(Collectors.toList());
+        Teacher teacher = teacherRepository.findByUsername(teacherUsername)
+                .orElseThrow(() -> new IllegalArgumentException("Teacher not found with username: " + teacherUsername));
+
+        List<Student> students = teacher.getStudents();
+
+            Optional<Student> foundStudent = students.stream()
+                    .filter(student -> student.getName().equals(studentName))
+                    .findFirst();
+
+            if (foundStudent.isPresent()) {
+                Student student = foundStudent.get();
+                return ModelConverter.studentToPublicDTO(student, teacher.getSubjects());
+            }
+        logger.warn(String.format("Student with name %s not found for teacher %s.", studentName, teacherUsername));
+
+        return null;
     }
 
     /**
@@ -63,17 +84,38 @@ public class TeacherService implements UserDetailsService {
      * @param request request body with all the information needed to create a student
      * @return An updated list of students
      */
-    public List<Student> addStudent(AddStudentRequest request, String teacherUsername) {
-        logger.info(String.format("beginning add student process for: %s.", teacherUsername));
+    public TeacherStudentList addStudent(AddStudentRequest request, String teacherUsername) {
+        logger.info(String.format("Beginning add student process for: %s.", teacherUsername));
         Teacher teacher = teacherRepository.findByUsername(teacherUsername)
-                .orElseThrow(NullPointerException::new);
-        Student studentToAdd = new Student(request.getName() , request.getPeriod(), BigDecimal.valueOf(100));
-        List<Student> students = teacher.getStudents();
-        if (students.contains(studentToAdd)) throw new RuntimeException("Student Already Exist");
-        addStudentToList(students, studentToAdd);
+                .orElseThrow(() -> new IllegalArgumentException("Teacher not found"));
+
+        List<Student> students = new ArrayList<>(teacher.getStudents());
+        int period = request.getPeriod();
+        Set<Role> authorities = new HashSet<>();
+        authorities.add(authorityRepository.findByAuthority("STUDENT").orElseThrow());
+
+        Student studentToAdd = new Student(request.getName(), period);
+        studentToAdd.setTeacher(teacher);
+        studentToAdd.setAuthorities(authorities);
+
+        List<Assignments> studentAssignments = new ArrayList<>();
+        studentAssignments.add(assignmentsRepository.save(new Assignments(
+                request.getSubject(),
+                request.getPeriod(),
+                studentToAdd
+        )));
+        studentToAdd.setAssignments(studentAssignments);
+
+        if (students.contains(studentToAdd)) {
+            throw new IllegalArgumentException("Student already exists");
+        }
+
+        studentRepository.save(studentToAdd);
+        students.add(studentToAdd);
         teacher.setStudents(students);
         teacherRepository.save(teacher);
-        return students.parallelStream().toList();
+
+        return ModelConverter.teacherStudentListToDTO(students, teacher.getSubjects());
     }
 
     /**
@@ -81,34 +123,23 @@ public class TeacherService implements UserDetailsService {
      * @param request request body with all information needed to handle the edit
      * @return an updated List of students
      */
-    public List<Student> editExistingStudent(EditStudentRequest request, String teacherUsername) {
-        Teacher teacher = teacherRepository.findByUsername(teacherUsername)
-                .orElseThrow(() -> new IllegalArgumentException("Teacher not found"));
-        logger.info(String.format("editing student with id: %d.", request.getStudentId()));
-        AtomicBoolean shouldResetOrder = new AtomicBoolean(false);
-        List<Student> updatedStudents = teacher.getStudents().parallelStream()
-                .peek(student -> {
-                    if (student.getStudentId().equals(request.getStudentId())) {
-                        if (!request.getNameToChange().isEmpty()) {
-                            student.setName(request.getNameToChange());
-                        }
-                        request.getPeriodToChange().ifPresent(period -> {
-                            if (!period.equals(student.getPeriod())) {
-                                shouldResetOrder.set(true);
-                                student.setPeriod(period);
-                            }
-                        });
-                        studentRepository.save(student);
-                    }
-                })
-                .collect(Collectors.toList());
-        if (shouldResetOrder.get()) {
-            sortStudentList(updatedStudents);
-        }
-        teacher.setStudents(updatedStudents);
-        teacherRepository.save(teacher);
+    public PublicStudentDTO editExistingStudent(EditStudentRequest request) {
+        Student student = studentRepository.findById(request.getStudentId())
+                .orElseThrow(() -> new EntityNotFoundException("Student not found with ID: " + request.getStudentId()));
+        logger.info(String.format("Editing student with id: %d.", request.getStudentId()));
 
-        return updatedStudents;
+        if (!request.getNameToChange().isEmpty()) {
+            student.setName(request.getNameToChange());
+        }
+        request.getPeriodToChange().ifPresent(period -> {
+            if (!period.equals(student.getPeriod())) {
+                student.setPeriod(period);
+            }
+        });
+        studentRepository.save(student);
+        Teacher teacher = student.getTeacher();
+
+        return ModelConverter.studentToPublicDTO(student, teacher.getSubjects());
     }
 
     public void saveTeacher(Teacher teacher) {
@@ -116,19 +147,23 @@ public class TeacherService implements UserDetailsService {
     }
 
     /**
-     * Deletes student using a teacher username and student Id
-     * @param studentId unique id given to student objects
+     * Deletes student using a teacher username and student Id.
+     * @param request object containing the id and period of the student.
      * @param teacherUsername unique username
      */
-    public void deleteStudent(Long studentId, String teacherUsername) {
+    public void deleteStudent(DeleteStudentRequest request , String teacherUsername) {
         Teacher teacher = teacherRepository.findByUsername(teacherUsername)
                 .orElseThrow(NullPointerException::new);
-        logger.info(String.format("deleting student with id: %d.", studentId));
-        Optional<Student> studentToDelete = teacher.getStudents().parallelStream()
-                        .filter(student -> student.getStudentId().equals(studentId))
-                                .findFirst();
-        studentToDelete.ifPresent(teacher.getStudents()::remove);
+        logger.info(String.format("Deleting student with id: %d.", request.studentId()));
+
+        List<Student> students = teacher.getStudents();
+        Optional<Student> studentToDelete = students
+                .parallelStream()
+                .filter(student -> student.getStudentId().equals(request.studentId()))
+                .findFirst();
+
         studentToDelete.ifPresent(student -> {
+            students.remove(student);
             studentRepository.delete(student);
             teacherRepository.save(teacher);
         });
@@ -171,16 +206,9 @@ public class TeacherService implements UserDetailsService {
         return teacherRepository.save(teacher);
     }
 
-    private void addStudentToList(List<Student> students, Student studentToAdd) {
-        int index = 0;
-        while (index < students.size() && students.get(index).getPeriod() > studentToAdd.getPeriod()) {
-            index++;
-        }
-        students.add(index, studentToAdd);
-    }
 
-    private void sortStudentList(List<Student> students) {
-        Comparator<Student> periodComparator = Comparator.comparingInt(Student::getPeriod);
-        students.sort(periodComparator);
+    private Assignments createNewAssignmentList(String subject, int period,
+                                                Student student) {
+        return new Assignments(subject, period, student);
     }
 }

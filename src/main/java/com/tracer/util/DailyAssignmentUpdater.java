@@ -1,7 +1,7 @@
 package com.tracer.util;
 
 import com.tracer.model.assignments.Assignment;
-import com.tracer.repository.AssignmentRepository;
+import com.tracer.repository.assignments.AssignmentRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;

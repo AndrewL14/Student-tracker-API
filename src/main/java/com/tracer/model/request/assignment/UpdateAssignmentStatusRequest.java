@@ -10,4 +10,5 @@ import lombok.*;
 public class UpdateAssignmentStatusRequest {
     private Long studentId;
     private Long assignmentId;
+    private int period;
 }
