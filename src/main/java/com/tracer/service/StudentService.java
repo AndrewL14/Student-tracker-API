@@ -109,11 +109,12 @@ public class StudentService implements UserDetailsService {
 
         List<Assignments> originalList = student.getAssignments();
 
-        if (request.getPeriod() < 0 || request.getPeriod() >= originalList.size()) {
+        if (request.getPeriod() < 0) {
             throw new IllegalStateException("No assignments found for the specified period");
         }
 
-        Assignments assignmentList = originalList.get(request.getPeriod());
+        Assignments assignmentList = originalList.stream().filter(assignments -> assignments.getPeriod() == request.getPeriod())
+                .findAny().orElseThrow(NullPointerException::new);
 
         Assignment assignmentToUpdate = assignmentList.getAssignments()
                 .stream()
@@ -163,7 +164,8 @@ public class StudentService implements UserDetailsService {
         List<Assignments> originalList = student.getAssignments();
         Assignments assignments = originalList.stream().filter(as -> as.getPeriod() == request.getPeriod()).findFirst()
                 .orElseThrow(() -> new IllegalArgumentException(String.format("no Assignments for period: %d", request.getPeriod())));
-        boolean removed = assignments.getAssignments().removeIf(assignment ->
+        List<Assignment> assignmentsList = new ArrayList<>(assignments.getAssignments());
+        boolean removed = assignmentsList.removeIf(assignment ->
                 Objects.equals(assignment.getId(), request.getAssignmentId()));
         if (removed) {
             assignmentRepository.deleteById(request.getAssignmentId());
@@ -173,6 +175,7 @@ public class StudentService implements UserDetailsService {
         assignments.setAverageGrade(updateAverageGrade(assignments.getAssignments()));
         student.setAssignments(originalList);
         studentRepository.save(student);
+        assignments.setAssignments(assignmentsList);
         return assignments.getAssignments();
     }
 
