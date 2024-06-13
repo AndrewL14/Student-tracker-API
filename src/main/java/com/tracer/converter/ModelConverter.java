@@ -1,9 +1,8 @@
 package com.tracer.converter;
 
-import com.tracer.model.DTO.PrivateStudentDTO;
-import com.tracer.model.DTO.PublicStudentDTO;
-import com.tracer.model.DTO.TeacherStudentList;
+import com.tracer.model.DTO.*;
 import com.tracer.model.Student;
+import com.tracer.model.assignments.Assignment;
 import com.tracer.model.assignments.Assignments;
 
 import java.util.*;
@@ -41,13 +40,40 @@ public class ModelConverter {
 
 
 
-    private static Map<Integer, Assignments> listToMap(List<Assignments> assignmentsList) {
-        Map<Integer, Assignments> response = new HashMap<>();
+    private static Map<Integer, StudentAssignmentsDTO> listToMap(List<Assignments> assignmentsList) {
+        Map<Integer, StudentAssignmentsDTO> response = new HashMap<>();
 
         for (Assignments assignments : assignmentsList) {
-            response.put(assignments.getPeriod(), assignments);
+            response.put(assignments.getPeriod(), assignmentsToDTO(assignments));
         }
 
        return response;
     }
+
+    private static StudentAssignmentsDTO assignmentsToDTO(Assignments assignments) {
+        return new StudentAssignmentsDTO(
+                assignments.getSubject(),
+                assignments.getPeriod(),
+                assignments.getAverageGrade(),
+                assignmentToDTO(assignments.getAssignments())
+        );
+    }
+
+    private static List<StudentAssignmentDTO> assignmentToDTO(List<Assignment> assignments) {
+        List<StudentAssignmentDTO> response = new ArrayList<>();
+
+        for (Assignment assignment : assignments) {
+            response.add(
+                    new StudentAssignmentDTO(
+                            assignment.getName(),
+                            assignment.getGrade(),
+                            assignment.isCompleted(),
+                            assignment.isOverdue(),
+                            assignment.getAssignmentType()
+                    )
+            );
+        }
+        return response;
+    }
+
 }
