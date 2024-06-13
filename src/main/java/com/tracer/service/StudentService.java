@@ -2,17 +2,28 @@ package com.tracer.service;
 
 import com.tracer.converter.ModelConverter;
 import com.tracer.model.DTO.PrivateStudentDTO;
+import com.tracer.model.DTO.PublicStudentDTO;
+import com.tracer.model.DTO.TeacherStudentList;
+import com.tracer.model.Role;
 import com.tracer.model.Student;
+import com.tracer.model.Teacher;
 import com.tracer.model.assignments.Assignment;
 import com.tracer.model.assignments.Assignments;
 import com.tracer.model.request.assignment.AddAssignmentRequest;
 import com.tracer.model.request.assignment.DeleteAssignmentRequest;
 import com.tracer.model.request.assignment.EditAssignmentRequest;
 import com.tracer.model.request.assignment.UpdateAssignmentStatusRequest;
+import com.tracer.model.request.student.AddStudentRequest;
+import com.tracer.model.request.student.DeleteStudentRequest;
+import com.tracer.model.request.student.EditStudentRequest;
+import com.tracer.repository.AuthorityRepository;
+import com.tracer.repository.TeacherRepository;
 import com.tracer.repository.assignments.AssignmentRepository;
 import com.tracer.repository.StudentRepository;
 import com.tracer.repository.assignments.AssignmentsRepository;
 import jakarta.persistence.EntityNotFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
@@ -26,177 +37,176 @@ import java.util.*;
 @Transactional
 public class StudentService implements UserDetailsService {
     @Autowired
+    private TeacherRepository teacherRepository;
+    @Autowired
     private StudentRepository studentRepository;
     @Autowired
     private AssignmentRepository assignmentRepository;
     @Autowired
     private AssignmentsRepository assignmentsRepository;
+    @Autowired
+    private AuthorityRepository authorityRepository;
+    private final Logger logger = LoggerFactory.getLogger(StudentService.class);
 
     /**
      * Gets a specific student by their ID.
      * @param id Database Id
      * @return The student associated with the ID.
      */
-    public PrivateStudentDTO getStudentById(Long id) {
+    public PublicStudentDTO getStudentById(Long id) {
+        var student = studentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException(String.format("Could not find student with id: %d", id)));
+        return ModelConverter.studentToPublicDTO(
+                student,
+                student.getTeacher().getSubjects()
+        );
+    }
+
+    /**
+     * Gets a specific student by their ID.
+     * @param email Students Unique email.
+     * @return The student associated with the ID.
+     */
+    public PrivateStudentDTO getStudentByEmail(String email) {
         return ModelConverter.studentToPrivateDTO(
-                studentRepository.findById(id)
-                        .orElseThrow(NullPointerException::new)
+                studentRepository.findByEmail(email)
+                        .orElseThrow(() -> new IllegalArgumentException(String.format("Could not find student with email: %s", email)))
         );
     }
 
     /**
-     * Gets all assignments associated with a given student.
-     * @param id Database id for the student.
-     * @return a List of Assignments.
+     * Uses the teachers unique username to find the list of corresponding students.
+     * @param username Teacher unique username
+     * @return a list of students matching the teacher.
      */
-    public List<Assignments> getAllAssignmentsByStudentId(Long id) {
-        return studentRepository
-                .findById(id)
-                .orElseThrow(NullPointerException::new)
-                .getAssignments();
+    public TeacherStudentList getAllStudentsByTeacherUsername(String username) {
+        logger.info(String.format("Getting all students associated with teacher: %s", username));
+        Teacher teacher = teacherRepository.findByUsername(username)
+                .orElseThrow(NullPointerException::new);
+        return ModelConverter.teacherStudentListToDTO(teacher.getStudents(), teacher.getSubjects());
     }
 
     /**
-     * Creates a new Assignment updates the student's assignment list and returns the
-     * updated list.
-     * @param request Information for a new assignment object.
-     * @return Updated list of assignments.
+     * Gets a list of students based on the teachers username and the students full name.
+     * Returns a list in the event there is more than 1 student with the same name.
+     * @param teacherUsername Teachers username
+     * @param studentName student's full name
+     * @return A list of students matching studentName
      */
-    public Assignments addNewAssignment(AddAssignmentRequest request) {
-        Student student = studentRepository.findById(request.getStudentId())
-                .orElseThrow(() -> new NoSuchElementException("Student not found"));
+    public PublicStudentDTO getStudentByName(String teacherUsername, String studentName) {
+        logger.info(String.format("Getting student with name %s associated with %s.", studentName, teacherUsername));
 
-        List<Assignments> originalList = student.getAssignments();
-        Assignments assignments = null;
+        Teacher teacher = teacherRepository.findByUsername(teacherUsername)
+                .orElseThrow(() -> new IllegalArgumentException("Teacher not found with username: " + teacherUsername));
 
-        for (Assignments assignmentList : originalList) {
-            if (assignmentList.getPeriod() == request.getPeriod()) {
-                assignments = assignmentList;
-                break;
-            }
+        List<Student> students = teacher.getStudents();
+
+        Optional<Student> foundStudent = students.stream()
+                .filter(student -> student.getName().equals(studentName))
+                .findFirst();
+
+        if (foundStudent.isPresent()) {
+            Student student = foundStudent.get();
+            return ModelConverter.studentToPublicDTO(student, teacher.getSubjects());
         }
+        logger.warn(String.format("Student with name %s not found for teacher %s.", studentName, teacherUsername));
 
-        Assignment newAssignment = new Assignment(
-                request.getAssignmentName(),
-                request.getGrade(),
-                request.isCompleted(),
-                false,
-                request.getDueDate(),
-                request.getAssignmentType().toUpperCase(),
-                assignments
-        );
-        assignmentRepository.save(newAssignment);
-
-        List<Assignment> assignmentsToUpdate = new ArrayList<>(assignments.getAssignments());
-        assignmentsToUpdate.add(newAssignment);
-        assignments.setAssignments(assignmentsToUpdate);
-        assignments.setAverageGrade(updateAverageGrade(assignmentsToUpdate));
-
-        student.setAssignments(originalList);
-        studentRepository.save(student);
-
-        return assignments;
+        return null;
     }
 
     /**
-     * preforms a status update on the assignment to mark the assignment as complete.
-     * @param request user request containing the period, student, and assignmentId.
-     * @return the updated List of assignments.
+     * Creates a new Student to add to an existing teacher.
+     * @param request request body with all the information needed to create a student
+     * @return An updated list of students
      */
-    public List<Assignment> updateCompleteStatus(UpdateAssignmentStatusRequest request, String teacherUsername) {
-        Student student = studentRepository.findById(request.getStudentId())
-                .orElseThrow(() -> new IllegalStateException("Student not found"));
+    public TeacherStudentList addStudent(AddStudentRequest request, String teacherUsername) {
+        logger.info(String.format("Beginning add student process for: %s.", teacherUsername));
+        Teacher teacher = teacherRepository.findByUsername(teacherUsername)
+                .orElseThrow(() -> new IllegalArgumentException("Teacher not found"));
 
-        List<Assignments> originalList = student.getAssignments();
+        List<Student> students = new ArrayList<>(teacher.getStudents());
+        int period = request.getPeriod();
+        Set<Role> authorities = new HashSet<>();
+        authorities.add(authorityRepository.findByAuthority("STUDENT").orElseThrow());
 
-        if (request.getPeriod() < 0) {
-            throw new IllegalStateException("No assignments found for the specified period");
+        Student studentToAdd = new Student(request.getName(), period);
+        studentToAdd.setTeacher(teacher);
+        studentToAdd.setAuthorities(authorities);
+
+        List<Assignments> studentAssignments = new ArrayList<>();
+        studentAssignments.add(assignmentsRepository.save(new Assignments(
+                request.getSubject(),
+                request.getPeriod(),
+                studentToAdd
+        )));
+        studentToAdd.setAssignments(studentAssignments);
+
+        if (students.contains(studentToAdd)) {
+            throw new IllegalArgumentException("Student already exists");
         }
 
-        Assignments assignmentList = originalList.stream().filter(assignments -> assignments.getPeriod() == request.getPeriod())
-                .findAny().orElseThrow(NullPointerException::new);
+        studentRepository.save(studentToAdd);
+        students.add(studentToAdd);
+        teacher.setStudents(students);
+        teacherRepository.save(teacher);
 
-        Assignment assignmentToUpdate = assignmentList.getAssignments()
-                .stream()
-                .filter(a -> Objects.equals(a.getId(), request.getAssignmentId()))
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("Assignment not found"));
-
-        assignmentToUpdate.setCompleted(true);
-        assignmentRepository.save(assignmentToUpdate);
-
-        studentRepository.save(student);
-
-        return assignmentList.getAssignments();
+        return ModelConverter.teacherStudentListToDTO(students, teacher.getSubjects());
     }
 
     /**
-     * Updates an assignment with information given by the user.
-     * @param request information needed to locate and update the assignment.
-     * @return Update list of assignments.
+     * Edits an existing student's data
+     * @param request request body with all information needed to handle the edit
+     * @return an updated List of students
      */
-    public List<Assignment> editAssignment(EditAssignmentRequest request) {
-        Assignment assignment = assignmentRepository.findById(request.getAssignmentId())
-                .orElseThrow(() -> new EntityNotFoundException("Assignment not found with ID: " + request.getAssignmentId()));
-        if (!request.getAssignmentNameToChange().isEmpty()) {
-            assignment.setName(request.getAssignmentNameToChange());
-        }
-        request.getGradeToChange().ifPresent(assignment::setGrade);
-        request.getDueDateToChange().ifPresent(assignment::setDueDate);
-        if (!request.getAssignmentTypeToChange().isEmpty()) {
-            assignment.setAssignmentType(request.getAssignmentTypeToChange());
-        }
-        assignmentRepository.save(assignment);
-        Assignments assignments = assignment.getAssignmentList();
-        assignments.setAverageGrade(updateAverageGrade(assignments.getAssignments()));
-        assignmentsRepository.save(assignments);
-        return assignments.getAssignments();
-    }
-
-    /**
-     * Deletes an assignment.
-     * @param request Information to locate the student and assignment.
-     * @return Update List of assignments.
-     */
-    public List<Assignment> deleteAssignment(DeleteAssignmentRequest request) {
+    public PublicStudentDTO editExistingStudent(EditStudentRequest request) {
         Student student = studentRepository.findById(request.getStudentId())
                 .orElseThrow(() -> new EntityNotFoundException("Student not found with ID: " + request.getStudentId()));
-        List<Assignments> originalList = student.getAssignments();
-        Assignments assignments = originalList.stream().filter(as -> as.getPeriod() == request.getPeriod()).findFirst()
-                .orElseThrow(() -> new IllegalArgumentException(String.format("no Assignments for period: %d", request.getPeriod())));
-        List<Assignment> assignmentsList = new ArrayList<>(assignments.getAssignments());
-        boolean removed = assignmentsList.removeIf(assignment ->
-                Objects.equals(assignment.getId(), request.getAssignmentId()));
-        if (removed) {
-            assignmentRepository.deleteById(request.getAssignmentId());
-        } else {
-            throw new EntityNotFoundException("Assignment not found with ID: " + request.getAssignmentId());
+        logger.info(String.format("Editing student with id: %d.", request.getStudentId()));
+
+        if (!request.getNameToChange().isEmpty()) {
+            student.setName(request.getNameToChange());
         }
-        assignments.setAverageGrade(updateAverageGrade(assignments.getAssignments()));
-        student.setAssignments(originalList);
+        request.getPeriodToChange().ifPresent(period -> {
+            if (!period.equals(student.getPeriod())) {
+                student.setPeriod(period);
+            }
+        });
         studentRepository.save(student);
-        assignments.setAssignments(assignmentsList);
-        return assignments.getAssignments();
+        Teacher teacher = student.getTeacher();
+
+        return ModelConverter.studentToPublicDTO(student, teacher.getSubjects());
     }
-
-
-
     /**
-     * Updates the average grade of all assignments.
-     * @param assignments List of assignments to get all grades.
-     * @return the average grade out of all grades given.
+     * Deletes student using a teacher username and student Id.
+     * @param request object containing the id and period of the student.
+     * @param teacherUsername unique username
      */
-    private double updateAverageGrade(List<Assignment> assignments) {
-        double total = 0;
-        for (Assignment assignment : assignments) {
-            total += assignment.getGrade();
-        }
-        return  total / assignments.size();
+    public void deleteStudent(DeleteStudentRequest request , String teacherUsername) {
+        Teacher teacher = teacherRepository.findByUsername(teacherUsername)
+                .orElseThrow(NullPointerException::new);
+        logger.info(String.format("Deleting student with id: %d.", request.studentId()));
+
+        List<Student> students = teacher.getStudents();
+        Optional<Student> studentToDelete = students
+                .parallelStream()
+                .filter(student -> student.getStudentId().equals(request.studentId()))
+                .findFirst();
+
+        studentToDelete.ifPresent(student -> {
+            students.remove(student);
+            studentRepository.delete(student);
+            teacherRepository.save(teacher);
+        });
     }
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
         Optional<Student> studentOpt = studentRepository.findByEmail(email);
         return studentOpt.orElseThrow(() -> new UsernameNotFoundException("Invalid Credentials"));
+    }
+
+    private Assignments createNewAssignmentList(String subject, int period,
+                                                Student student) {
+        return new Assignments(subject, period, student);
     }
 }
