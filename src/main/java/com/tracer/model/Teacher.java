@@ -53,6 +53,7 @@ public class Teacher implements UserDetails {
         this.email = email;
         this.password = password;
         this.students = new ArrayList<>();
+        this.subjects = new HashSet<>();
         this.authorities = authorities;
         this.isEmailVerified = false;
     }
@@ -61,7 +62,9 @@ public class Teacher implements UserDetails {
         this.username = username;
         this.password = password;
         this.students = new ArrayList<>();
+        this.subjects = new HashSet<>();
         this.authorities = authorities;
+        this.isEmailVerified = false;
     }
 
     public Teacher(String username , String password, String email) {
@@ -69,12 +72,16 @@ public class Teacher implements UserDetails {
         this.password = password;
         this.email = email;
         this.students = new ArrayList<>();
+        this.subjects = new HashSet<>();
+        this.isEmailVerified = false;
     }
 
     public Teacher(String username , String password) {
         this.username = username;
         this.password = password;
         this.students = new ArrayList<>();
+        this.subjects = new HashSet<>();
+        this.isEmailVerified = false;
     }
 
     @Override
