@@ -1,5 +1,9 @@
-# Endpoint documentation
+# Endpoint Sample request
 
+- Visit [Authentication doc](EndpointSecitions/AUTHENTICATIONENDPOINTS.MD) for more information on the authentication endpoints.
+- Visit [Student doc](EndpointSecitions/STUDENTENDPOINTS.MD) for more information on Student endpoints.
+- Visit [Teacher doc](EndpointSecitions/TEACHERENDPOINTS.MD) for more information on Teacher endpoints.
+- Visit [Request objects doc](REQUETSOBJECTS.MD) for more information on request bodies.
 
 
 The way the project is set up you will need to log in before calling any methods, as you will need a
@@ -14,6 +18,8 @@ Sample Request Requiring a JWT token.
 ![example 1](example-1.png)
 ![example 2](example-2.png)
 
+
+### (When in dev mode) This program will run on `http://localhost:5000/`
 ## Authentication request
 ___
 
@@ -39,9 +45,9 @@ curl -X POST -H "Content-Type: application/json" -d '{"username": "james", "pass
 }
 ```
 ```yaml
-  - path: "/student/refresh-token{token}"
+  - path: "/auth/refresh-token{token}"
     method: "POST"
-    description: "Refresh token."
+    description: "uses Refresh token to generate a new JWT."
     request_params:
       - name: "token"
         type: "string"
@@ -56,7 +62,7 @@ request files are formatted in `.yaml` to show what is needed, for requests requ
 corresponding `.json` format has been provided for quick copy and paste.
 ```yaml
 endpoints:
-  - path: "/student/generate/refresh-token"
+  - path: "/auth/generate/refresh-token"
     method: "POST"
     description: "Generate a refresh token."
     headers:
@@ -68,7 +74,7 @@ endpoints:
 ## Student request
 ___
 ### GET all students
-You will need to also but an empty body when sending the request.
+All request should be sent with a body even if the body is empty.
 ```yaml
 request:
   method: GET
@@ -89,7 +95,7 @@ request_get_unique_student:
 ```yaml
 request_put_add_student:
   method: PUT
-  url: http://localhost:5000/teacher/add
+  url: http://localhost:5000/teacher/add/student
   headers:
     Authorization: "Bearer YOUR_ACCESS_TOKEN"
   body:
@@ -108,7 +114,7 @@ request_put_add_student:
 ```yaml
 request_post_edit_student:
   method: POST
-  url: http://localhost:5000/teacher/edit
+  url: http://localhost:5000/teacher/edit/student
   headers:
     Authorization: "Bearer YOUR_ACCESS_TOKEN"
   body:
@@ -127,7 +133,7 @@ request_post_edit_student:
 ```yaml
 request_delete_delete_student:
   method: DELETE
-  url: http://localhost:5000/teacher/delete
+  url: http://localhost:5000/teacher/delete/student
   headers:
     Authorization: "Bearer YOUR_ACCESS_TOKEN"
   body:
@@ -144,7 +150,7 @@ ___
 
 ```yaml
 endpoints:
-  - path: "/student/get-student{id}"
+  - path: "/teacher/get-student{id}"
     method: "GET"
     description: "Get student by ID."
     request_params:
@@ -156,7 +162,7 @@ endpoints:
         type: "string"
         description: "JWT token for authentication."
 
-  - path: "/student/get-all{id}"
+  - path: "/teacher/get-all{id}"
     method: "GET"
     description: "Get all assignments for a student."
     request_params:
@@ -168,7 +174,7 @@ endpoints:
         type: "string"
         description: "JWT token for authentication."
 
-  - path: "/student/add"
+  - path: "/teacher/add/assignment"
     method: "PUT"
     description: "Add a new assignment for a student."
     request_body:
@@ -179,7 +185,7 @@ endpoints:
         type: "string"
         description: "JWT token for authentication."
 
-  - path: "/student/update-status/"
+  - path: "/teacher/update-status/"
     method: "POST"
     description: "Update assignment status for a student."
     request_body:
@@ -190,7 +196,7 @@ endpoints:
         type: "string"
         description: "JWT token for authentication."
 
-  - path: "/student/edit"
+  - path: "/teacher/edit/assignment"
     method: "POST"
     description: "Edit an existing assignment for a student."
     request_body:
@@ -201,7 +207,7 @@ endpoints:
         type: "string"
         description: "JWT token for authentication."
 
-  - path: "/student/delete"
+  - path: "/teacher/delete/assignment"
     method: "DELETE"
     description: "Delete an assignment for a student."
     request_body:
@@ -211,78 +217,6 @@ endpoints:
       - name: "Authorization"
         type: "string"
         description: "JWT token for authentication."
-
-```
-## request body objects
-___
-```yaml
-AddAssignmentRequest:
-  type: object
-  properties:
-    studentId:
-      type: integer
-      description: "ID of the student."
-    assignmentName:
-      type: string
-      description: "Name of the assignment."
-    grade:
-      type: number
-      format: double
-      description: "Grade of the assignment."
-    completed:
-      type: boolean
-      description: "Indicates if the assignment is completed or not."
-    dueDate:
-      type: string
-      format: date
-      description: "Due date of the assignment. Format: yyyy-MM-dd."
-    assignmentType:
-      type: string
-      description: "Type of the assignment."
-
-DeleteAssignmentRequest:
-  type: object
-  properties:
-    studentId:
-      type: integer
-      description: "ID of the student."
-    assignmentId:
-      type: integer
-      description: "ID of the assignment to be deleted."
-
-EditAssignmentRequest:
-  type: object
-  properties:
-    studentId:
-      type: integer
-      description: "ID of the student."
-    assignmentId:
-      type: integer
-      description: "ID of the assignment to be edited."
-    assignmentNameToChange:
-      type: string
-      description: "New name for the assignment."
-    gradeToChange:
-      type: number
-      format: double
-      description: "New grade for the assignment."
-    dueDateToChange:
-      type: string
-      format: date
-      description: "New due date for the assignment. Format: yyyy-MM-dd."
-    assignmentTypeToChange:
-      type: string
-      description: "New type for the assignment."
-
-UpdateAssignmentStatusRequest:
-  type: object
-  properties:
-    studentId:
-      type: integer
-      description: "ID of the student."
-    assignmentId:
-      type: integer
-      description: "ID of the assignment to update status."
 
 ```
 
