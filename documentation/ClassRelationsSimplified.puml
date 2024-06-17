@@ -3,16 +3,52 @@
 !theme mars
 
 package com.tracer.model <<Frame>> {
-    package request {
-        class AddStudentRequest
-        class EditStudentRequest
-        class GetStudentRequest
-        class LoginRequest
-        class RegistrationRequest
-    }
 
-    package response {
-        class LoginResponse
+    package response <<Frame>>{
+        class StudentLoginResponse
+        class TeacherLoginResponse
+    }
+    package assignments <<Frame>>{
+        class Assignment
+        class Assignments
+        class AssignmentType
+    }
+    package DTO <<Frame>>{
+        class privateStudentDTO
+        class PublicStudentDTO
+        class StudentAssignmentDTO
+        class StudentAssignmentsDTO
+        class TeacherStudentList
+    }
+    package request <<Frame>>{
+        package assignment <<Frame>>{
+            class AddAssignmentRequest
+            class DeleteAssignmentRequest
+            class EditAssignmentRequest
+            class UpdateAssignmentStatus
+        }
+        package authentication <<Frame>>{
+            class BasicLoginRequest
+            class CompletePasswordResetRequest
+            class EmailLoginRequest
+            class RegistrationRequest
+        }
+        package student <<Frame>>{
+            class AddStudentRequest
+            class DeleteStudentRequest
+            class EditStudentRequest
+            class GetStudentRequest
+        }
+        package teacher <<Frame>>{
+            class CreateTeacherRequest
+            class EditTeacherRequest
+        }
+    }
+    package tokens <<Frame>>{
+        class EmailToken
+        class PasswordResetToken
+        class RefreshToken
+        class Token
     }
 
     class Role
@@ -20,13 +56,27 @@ package com.tracer.model <<Frame>> {
     class Teacher
 }
 
+
+
+
+
+
 package com.tracer.service <<Frame>> {
+    class AssignmentsService
     class AuthenticationService
+    class MailSenderService
+    class StudentService
     class TeacherService
     class TokenService
 }
 
 package com.tracer.repository <<Database>> {
+    class AssignmentRepository
+    class AssignmentsRepository
+    class EmailTokenRepository
+    class PasswordResetTokenRepository
+    class RefreshTokenRepository
+    class TokenRepository
     class StudentRepository
     class AuthorityRepository
     class TeacherRepository
@@ -34,27 +84,36 @@ package com.tracer.repository <<Database>> {
 
 package com.tracer.controller <<Frame>> {
     class AuthController
+    class StudentController
     class TeacherController
 }
+
+
+
+
 Teacher --up|> UserDetails
-Role --|> GrantedAuthority
-Teacher --|> Role
-Teacher --|> Student
+Role --up|> GrantedAuthority
+Teacher --right|> Role
+Teacher <|--|> Student
+
+Student <|--down|> Assignments
+
+Assignments <|--right|> Assignment
+
+Assignment --|> AssignmentType
 
 AuthenticationService ..> TeacherService
-AuthenticationService ..> AuthorityRepository
-AuthenticationService ..> PasswordEncoder
-AuthenticationService ..> AuthenticationManager
+AuthenticationService ..> StudentService
+AuthenticationService ..>  MailSenderService
+AuthenticationService ..up> PasswordEncoder
+AuthenticationService ..up> AuthenticationManager
 AuthenticationService ..> TokenService
-
-TeacherService ..> TeacherRepository
-TeacherService ..> StudentRepository
 
 TokenService ..> JwtEncoder
 TokenService ..> JwtDecoder
 
-AuthController ..> AuthenticationService
-TeacherController ..> TeacherService
+com.tracer.service ..> com.tracer.repository
+com.tracer.controller ..> com.tracer.service
 
 
 
