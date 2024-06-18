@@ -204,9 +204,4 @@ public class StudentService implements UserDetailsService {
         Optional<Student> studentOpt = studentRepository.findByEmail(email);
         return studentOpt.orElseThrow(() -> new UsernameNotFoundException("Invalid Credentials"));
     }
-
-    private Assignments createNewAssignmentList(String subject, int period,
-                                                Student student) {
-        return new Assignments(subject, period, student);
-    }
 }
