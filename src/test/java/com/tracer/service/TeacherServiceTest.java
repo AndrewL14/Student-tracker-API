@@ -1,257 +1,178 @@
 package com.tracer.service;
 
-import com.tracer.model.DTO.PublicStudentDTO;
-import com.tracer.model.DTO.TeacherStudentList;
 import com.tracer.model.Role;
-import com.tracer.model.Student;
 import com.tracer.model.Teacher;
-import com.tracer.model.assignments.Assignments;
-import com.tracer.model.request.student.AddStudentRequest;
-import com.tracer.model.request.student.DeleteStudentRequest;
-import com.tracer.model.request.student.EditStudentRequest;
+import com.tracer.model.request.teacher.CreateTeacherRequest;
+import com.tracer.model.request.teacher.EditTeacherRequest;
 import com.tracer.repository.AuthorityRepository;
 import com.tracer.repository.StudentRepository;
 import com.tracer.repository.TeacherRepository;
 import com.tracer.repository.assignments.AssignmentsRepository;
-import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.springframework.security.core.userdetails.UserDetails;
 
-import java.math.BigDecimal;
-import java.util.*;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.MockitoAnnotations.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.mockito.Mockito.*;
 
 public class TeacherServiceTest {
-    private Teacher testTeacher = new Teacher("james", "passowrd");
-    private Student testStudent = new Student("Jhon Smith", 2);
-
 
     @Mock
     private TeacherRepository teacherRepository;
+
     @Mock
     private StudentRepository studentRepository;
+
     @Mock
     private AuthorityRepository authorityRepository;
+
     @Mock
     private AssignmentsRepository assignmentsRepository;
+
     @InjectMocks
-    private TeacherService service;
+    private TeacherService teacherService;
+
+    private Teacher testTeacher;
+    private CreateTeacherRequest createTeacherRequest;
+    private EditTeacherRequest editTeacherRequest;
 
     @BeforeEach
-    public void setup() {
-        initMocks(this);
+    void setUp() {
+        MockitoAnnotations.openMocks(this);
+
+        testTeacher = new Teacher();
+        testTeacher.setTeacherId(1L);
+        testTeacher.setUsername("teacher1");
+        testTeacher.setEmail("teacher1@example.com");
+        testTeacher.setPassword("password");
+        testTeacher.setSubjects(new HashSet<>(Set.of("Math", "Science")));
+
+        createTeacherRequest = new CreateTeacherRequest("teacher1", "teacher1@example.com", "password", Set.of("Math", "Science"));
+
+        editTeacherRequest = new EditTeacherRequest();
+        editTeacherRequest.setUsername("newTeacher");
+        editTeacherRequest.setEmail("newTeacher@example.com");
+        editTeacherRequest.setPassword("newPassword");
+        editTeacherRequest.setSubjects(new HashSet<>(Set.of("Math")));
     }
 
     @Test
-    public void getAllStudentsByTeacherUsername_ExistingTeacher_listOfStudents() {
+    public void createTeacher_validRequest_teacher() {
         // GIVEN
-        List<Student> students = new ArrayList<>();
-        students.add(testStudent);
-        testTeacher.setStudents(students);
-
+        Role teacherRole = new Role();
+        teacherRole.setAuthority("TEACHER");
 
         // WHEN
-        Mockito.when(teacherRepository.findByUsername(testTeacher.getUsername()))
-                .thenReturn(Optional.ofNullable(testTeacher));
-        TeacherStudentList response = service.getAllStudentsByTeacherUsername(testTeacher.getUsername());
+        when(authorityRepository.findByAuthority("TEACHER")).thenReturn(Optional.of(teacherRole));
+
+        Teacher createdTeacher = teacherService.createTeacher(createTeacherRequest);
 
         // THEN
-        assertNotNull(response, "Expected NOT null");
-//        assertEquals(1 , response.size(), "Expected response to have size 1 but got: " + response.size());
+        assertNotNull(createdTeacher);
+        assertEquals(createTeacherRequest.username(), createdTeacher.getUsername());
+        assertEquals(createTeacherRequest.email(), createdTeacher.getEmail());
+        assertEquals(createTeacherRequest.password(), createdTeacher.getPassword());
+        assertEquals(createTeacherRequest.subjects(), createdTeacher.getSubjects());
+
+        verify(authorityRepository, times(1)).findByAuthority("TEACHER");
+        verify(teacherRepository, times(1)).save(createdTeacher);
     }
 
     @Test
-    public void getAllStudentsByTeacherUsername_NonExistingTeacher_throwNullPointer() {
+    public void editTeacher_ValidRequest_teacher() {
         // GIVEN
-        String invalidTeacherUsername = "a null teacher";
-
         // WHEN
-        // THEN
-        assertThrows(NullPointerException.class, () -> {
-            service.getAllStudentsByTeacherUsername(invalidTeacherUsername);
-        });
-    }
+        when(teacherRepository.findByUsername("teacher1")).thenReturn(Optional.of(testTeacher));
 
-    @Test
-    public void getStudentByName_validTeacherValidStudent_ListOfStudents() {
-        // GIVEN
-        List<Student> students = new ArrayList<>();
-        students.add(testStudent);
-        testTeacher.setStudents(students);
-
-        // WHEN
-        Mockito.when(teacherRepository.findByUsername(testTeacher.getUsername()))
-                .thenReturn(Optional.ofNullable(testTeacher));
-        PublicStudentDTO response = service.getStudentByName(testTeacher.getUsername() , testStudent.getName());
+        Teacher editedTeacher = teacherService.editTeacher(editTeacherRequest, "teacher1");
 
         // THEN
-        assertNotNull(response);
+        assertNotNull(editedTeacher);
+        assertEquals(editTeacherRequest.getUsername(), editedTeacher.getUsername());
+        assertEquals(editTeacherRequest.getEmail(), editedTeacher.getEmail());
+        assertEquals(editTeacherRequest.getPassword(), editedTeacher.getPassword());
+        assertEquals(editTeacherRequest.getSubjects(), editedTeacher.getSubjects());
+
+        verify(teacherRepository, times(1)).findByUsername("teacher1");
+        verify(teacherRepository, times(1)).save(editedTeacher);
     }
 
     @Test
-    public void getStudentByName_InvalidTeacherInvalidStudent_ThrowNullPointer() {
+    public void deleteTeacherByUsername_ValidUsername_void() {
         // GIVEN
-        String invalidTeacherUsername = "a null teacher";
-        String invalidStudentName = "a null student";
-
         // WHEN
-        // THEN
-        assertThrows(IllegalArgumentException.class, () -> {
-            service.getStudentByName(invalidTeacherUsername, invalidStudentName);
-        });
-    }
+        when(teacherRepository.findByUsername("teacher1")).thenReturn(Optional.of(testTeacher));
 
-    @Test
-    public void getStudentByName_ValidTeacherNameInvalidStudent_emptyList() {
-        // GIVEN
-        String invalidStudentName = "a null student";
-
-        // WHEN
-        Mockito.when(teacherRepository.findByUsername(testTeacher.getUsername()))
-                .thenReturn(Optional.ofNullable(testTeacher));
-        PublicStudentDTO response = service.getStudentByName(testTeacher.getUsername() , invalidStudentName);
+        teacherService.deleteTeacherByUsername("teacher1");
 
         // THEN
-        assertNull(response);
+        verify(teacherRepository, times(1)).findByUsername("teacher1");
+        verify(teacherRepository, times(1)).delete(testTeacher);
     }
 
     @Test
-    public void addStudent_validRequest_updatedListOfStudents() {
+    public void deleteTeacherById_validId_void() {
         // GIVEN
-        Set<String> subjects = new HashSet<>();
-        subjects.add("math");
-        testTeacher.setSubjects(subjects);
-
-        List<Student> fakeStudents = List.of(new Student("fake", 1));
-        testTeacher.setStudents(fakeStudents);
-        AddStudentRequest request = new AddStudentRequest("John Doe", 1, "math", BigDecimal.ONE);
-       Mockito.when(teacherRepository.findByUsername(testTeacher.getUsername()))
-               .thenReturn(Optional.of(testTeacher));
-       Mockito.when(authorityRepository.findByAuthority("STUDENT")).thenReturn(Optional.of(new Role("STUDENT")));
-       Mockito.when(assignmentsRepository.save(Mockito.any())).thenReturn(new Assignments());
-       Mockito.when(studentRepository.save(Mockito.any())).thenReturn(testStudent);
-
-        // Act
-        TeacherStudentList response = service.addStudent(request, "james");
-
-        // Assert
-        Mockito.verify(teacherRepository, Mockito.times(1)).save(testTeacher);
-    }
-
-    @Test
-    public void addStudent_InvalidRequest_throwsNullPointer() {
-        // GIVEN
-        AddStudentRequest request = new AddStudentRequest("joe", 2, "math", BigDecimal.ONE);
-
         // WHEN
-        // THEN
-        assertThrows(IllegalArgumentException.class, () -> {
-            service.addStudent(request,"invalidTeacher");
-        });
-    }
+        when(teacherRepository.findById(1L)).thenReturn(Optional.of(testTeacher));
 
-    @Test
-    public void editExistingStudent_validRequest_ListOfStudents() {
-        // GIVEN
-        Set<String> subjects = new HashSet<>();
-        subjects.add("math");
-        testTeacher.setSubjects(subjects);
-
-
-        Long studentId = 1L;
-        List<Student> students = new ArrayList<>();
-        testStudent.setStudentId(studentId);
-        students.add(testStudent);
-        testTeacher.setStudents(students);
-        testStudent.setTeacher(testTeacher);
-
-        Assignments assignments = new Assignments("math", 1, testStudent);
-        testStudent.setAssignments(List.of(assignments));
-
-        EditStudentRequest request = new EditStudentRequest();
-        request.setStudentId(studentId);
-        request.setNameToChange("kenny");
-        request.setPeriodToChange(Optional.of(1));
-
-        // WHEN
-        Mockito.when(studentRepository.findById(studentId)).thenReturn(
-                Optional.of(testStudent)
-        );
-        PublicStudentDTO response = service.editExistingStudent(request);
+        teacherService.deleteTeacherById(1L);
 
         // THEN
-        assertNotNull(response);
-        Mockito.verify(teacherRepository, Mockito.times(1)).save(testTeacher);
-        Mockito.verify(studentRepository, Mockito.times(1)).save(Mockito.any(Student.class));
+        verify(teacherRepository, times(1)).findById(1L);
+        verify(teacherRepository, times(1)).delete(testTeacher);
     }
 
     @Test
-    public void editExistingStudent_InvalidRequest_throwsIllegalArgument() {
+    public void loadUserByUsername_validUsername_userDetails() {
         // GIVEN
-        EditStudentRequest invalidRequest = new EditStudentRequest();
-
         // WHEN
-        // THEN
-        assertThrows(EntityNotFoundException.class, () -> {
-            service.editExistingStudent(invalidRequest);
-        });
-    }
+        when(teacherRepository.findByUsername("teacher1")).thenReturn(Optional.of(testTeacher));
 
-    @Test
-    public void editExistingStudent_IncompleteRequest_returnsUpdatedList() {
-        // GIVEN
-        Long studentId = 1L;
-        List<Student> students = new ArrayList<>();
-        testStudent.setStudentId(studentId);
-        students.add(testStudent);
-        testTeacher.setStudents(students);
-
-        EditStudentRequest request = new EditStudentRequest();
-        request.setStudentId(studentId);
-
-        // WHEN
-        Mockito.when(teacherRepository.findByUsername(testTeacher.getUsername()))
-                .thenReturn(Optional.ofNullable(testTeacher));
-        PublicStudentDTO response = service.editExistingStudent(request);
+        UserDetails userDetails = teacherService.loadUserByUsername("teacher1");
 
         // THEN
-        assertNotNull(response);
-        Mockito.verify(teacherRepository, Mockito.times(1)).save(testTeacher);
-        Mockito.verify(studentRepository, Mockito.times(1)).save(Mockito.any(Student.class));
+        assertNotNull(userDetails);
+        assertEquals(testTeacher, userDetails);
+
+        verify(teacherRepository, times(1)).findByUsername("teacher1");
     }
 
     @Test
-    public void deleteStudent_validRequest() {
-        // GIVEN
-        Long studentId = 1L;
-        List<Student> students = new ArrayList<>();
-        testStudent.setStudentId(studentId);
-        students.add(testStudent);
-        testTeacher.setStudents(students);
-
-
-        // WHEN
-        Mockito.when(teacherRepository.findByUsername(testTeacher.getUsername()))
-                .thenReturn(Optional.ofNullable(testTeacher));
-        service.deleteStudent(new DeleteStudentRequest(1, studentId), testTeacher.getUsername());
-
-        Mockito.verify(teacherRepository, Mockito.times(1)).save(testTeacher);
-        Mockito.verify(studentRepository, Mockito.times(1)).delete(testStudent);
-        assertEquals(0, testTeacher.getStudents().size());
-    }
-
-    @Test
-    public void deleteStudent_InvalidRequest_throwsNullPointer() {
+    public void loadUserByEmail_validEmail_userDetails() {
         // GIVEN
         // WHEN
+        when(teacherRepository.findByEmail("teacher1@example.com")).thenReturn(Optional.of(testTeacher));
+
+        UserDetails userDetails = teacherService.loadUserByEmail("teacher1@example.com");
+
         // THEN
-        assertThrows(NullPointerException.class, () -> {
-            service.deleteStudent(new DeleteStudentRequest(1, 3L), testTeacher.getUsername());
-        });
+        assertNotNull(userDetails);
+        assertEquals(testTeacher, userDetails);
+
+        verify(teacherRepository, times(1)).findByEmail("teacher1@example.com");
+    }
+
+    @Test
+    public void saveNewTeacher_validTeacher_userDetails() {
+        // GIVEN
+        // WHEN
+        when(teacherRepository.save(testTeacher)).thenReturn(testTeacher);
+
+        UserDetails userDetails = teacherService.saveNewTeacher(testTeacher);
+
+        // THEN
+        assertNotNull(userDetails);
+        assertEquals(testTeacher, userDetails);
+
+        verify(teacherRepository, times(1)).save(testTeacher);
     }
 }
