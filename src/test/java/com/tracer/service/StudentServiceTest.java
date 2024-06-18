@@ -1,159 +1,263 @@
 package com.tracer.service;
 
+import com.tracer.model.DTO.PublicStudentDTO;
+import com.tracer.model.DTO.TeacherStudentList;
+import com.tracer.model.Role;
 import com.tracer.model.Student;
-import com.tracer.model.assignments.Assignment;
+import com.tracer.model.Teacher;
 import com.tracer.model.assignments.Assignments;
-import com.tracer.model.request.assignment.AddAssignmentRequest;
-import com.tracer.model.request.assignment.DeleteAssignmentRequest;
-import com.tracer.model.request.assignment.EditAssignmentRequest;
-import com.tracer.model.request.assignment.UpdateAssignmentStatusRequest;
+import com.tracer.model.request.student.AddStudentRequest;
+import com.tracer.model.request.student.DeleteStudentRequest;
+import com.tracer.model.request.student.EditStudentRequest;
+import com.tracer.repository.AuthorityRepository;
 import com.tracer.repository.StudentRepository;
-import com.tracer.repository.assignments.AssignmentRepository;
+import com.tracer.repository.TeacherRepository;
 import com.tracer.repository.assignments.AssignmentsRepository;
+import jakarta.persistence.EntityNotFoundException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 
-import java.time.LocalDate;
-import java.util.List;
-import java.util.Optional;
+import java.math.BigDecimal;
+import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
-import static org.mockito.MockitoAnnotations.openMocks;
+import static org.mockito.MockitoAnnotations.initMocks;
 
 public class StudentServiceTest {
+    private Teacher testTeacher = new Teacher("james", "passowrd");
+    private Student testStudent = new Student("Jhon Smith", 2);
 
+
+    @Mock
+    private TeacherRepository teacherRepository;
     @Mock
     private StudentRepository studentRepository;
     @Mock
-    private AssignmentsRepository assignmentsRepository;
+    private AuthorityRepository authorityRepository;
     @Mock
-    private AssignmentRepository assignmentRepository;
-
+    private AssignmentsRepository assignmentsRepository;
     @InjectMocks
     private StudentService service;
 
-    private Student testStudent;
-    private Assignments testAssignments;
-    private Assignment testAssignment;
-    private AddAssignmentRequest addAssignmentRequest;
-    private UpdateAssignmentStatusRequest updateAssignmentStatusRequest;
-    private EditAssignmentRequest editAssignmentRequest;
-    private DeleteAssignmentRequest deleteAssignmentRequest;
-
     @BeforeEach
     public void setup() {
-        openMocks(this);
+        initMocks(this);
+        Set<String> subjects = new HashSet<>();
+        subjects.add("math");
 
-        testAssignment = new Assignment();
-        testAssignment.setId(1L);
-        testAssignment.setGrade(90.0);
-        testAssignment.setCompleted(false);
-
-        testAssignments = new Assignments();
-        testAssignments.setId(1L);
-        testAssignments.setPeriod(1);
-        testAssignments.setAssignments(List.of(testAssignment));
-        testAssignment.setAssignmentList(testAssignments);
-
-        testStudent = new Student();
-        testStudent.setStudentId(1L);
-        testStudent.setName("test student");
-        testStudent.setAssignments(List.of(testAssignments));
-        testAssignments.setStudent(testStudent);
-
-        addAssignmentRequest = new AddAssignmentRequest();
-        addAssignmentRequest.setStudentId(1L);
-        addAssignmentRequest.setPeriod(1);
-        addAssignmentRequest.setAssignmentName("New Assignment");
-        addAssignmentRequest.setGrade(95.0);
-        addAssignmentRequest.setCompleted(false);
-        addAssignmentRequest.setDueDate(LocalDate.now());
-        addAssignmentRequest.setAssignmentType("HOMEWORK");
-
-        updateAssignmentStatusRequest = new UpdateAssignmentStatusRequest();
-        updateAssignmentStatusRequest.setStudentId(1L);
-        updateAssignmentStatusRequest.setPeriod(1);
-        updateAssignmentStatusRequest.setAssignmentId(1L);
-
-        editAssignmentRequest = new EditAssignmentRequest();
-        editAssignmentRequest.setAssignmentId(1L);
-        editAssignmentRequest.setAssignmentNameToChange("Updated Assignment");
-
-        deleteAssignmentRequest = new DeleteAssignmentRequest();
-        deleteAssignmentRequest.setStudentId(1L);
-        deleteAssignmentRequest.setPeriod(1);
-        deleteAssignmentRequest.setAssignmentId(1L);
+        testTeacher.setSubjects(subjects);
+        testTeacher.setStudents(List.of(testStudent));
+        testStudent.setTeacher(testTeacher);
     }
 
     @Test
-    public void getAllAssignmentsByStudentId_validRequest_returnsAssignments() {
+    public void getAllStudentsByTeacherUsername_ExistingTeacher_listOfStudents() {
         // GIVEN
-        when(studentRepository.findById(1L)).thenReturn(Optional.of(testStudent));
+        List<Student> students = new ArrayList<>();
+        students.add(testStudent);
+        testTeacher.setStudents(students);
+
 
         // WHEN
-        List<Assignments> assignments = service.getAllAssignmentsByStudentId(1L);
+        Mockito.when(teacherRepository.findByUsername(testTeacher.getUsername()))
+                .thenReturn(Optional.ofNullable(testTeacher));
+        TeacherStudentList response = service.getAllStudentsByTeacherUsername(testTeacher.getUsername());
 
         // THEN
-        assertNotNull(assignments, "Expected assignments to not be null");
-        assertEquals(1, assignments.size(), "Expected one assignment period");
-        assertEquals(1, assignments.get(0).getPeriod(), "Expected period to be 1");
+        assertNotNull(response, "Expected NOT null");
+//        assertEquals(1 , response.size(), "Expected response to have size 1 but got: " + response.size());
     }
 
     @Test
-    public void addNewAssignment_validRequest_updatesAndReturnsAssignments() {
+    public void getAllStudentsByTeacherUsername_NonExistingTeacher_throwNullPointer() {
         // GIVEN
-        when(studentRepository.findById(1L)).thenReturn(Optional.of(testStudent));
-        when(assignmentRepository.save(Mockito.any())).thenReturn(testAssignment);
+        String invalidTeacherUsername = "a null teacher";
 
         // WHEN
-        Assignments updatedAssignments = service.addNewAssignment(addAssignmentRequest);
-
         // THEN
-        assertNotNull(updatedAssignments, "Expected updated assignments to not be null");
-        assertEquals(2, updatedAssignments.getAssignments().size(), "Expected two assignments in the period");
+        assertThrows(NullPointerException.class, () -> {
+            service.getAllStudentsByTeacherUsername(invalidTeacherUsername);
+        });
     }
 
     @Test
-    public void updateCompleteStatus_validRequest_marksAssignmentAsComplete() {
+    public void getStudentByName_validTeacherValidStudent_ListOfStudents() {
         // GIVEN
-        when(studentRepository.findById(1L)).thenReturn(Optional.of(testStudent));
+        List<Student> students = new ArrayList<>();
+        students.add(testStudent);
+        testTeacher.setStudents(students);
 
         // WHEN
-        List<Assignment> updatedAssignments = service.updateCompleteStatus(updateAssignmentStatusRequest, "teacherUsername");
+        Mockito.when(teacherRepository.findByUsername(testTeacher.getUsername()))
+                .thenReturn(Optional.ofNullable(testTeacher));
+        PublicStudentDTO response = service.getStudentByName(testTeacher.getUsername() , testStudent.getName());
 
         // THEN
-        assertNotNull(updatedAssignments, "Expected updated assignments to not be null");
-        assertTrue(updatedAssignments.get(0).isCompleted(), "Expected assignment to be marked as complete");
+        assertNotNull(response);
     }
 
     @Test
-    public void editAssignment_validRequest_updatesAssignment() {
+    public void getStudentByName_InvalidTeacherInvalidStudent_ThrowNullPointer() {
         // GIVEN
-        when(assignmentRepository.findById(1L)).thenReturn(Optional.of(testAssignment));
-        when(assignmentRepository.save(Mockito.any())).thenReturn(testAssignment);
+        String invalidTeacherUsername = "a null teacher";
+        String invalidStudentName = "a null student";
 
         // WHEN
-        List<Assignment> updatedAssignments = service.editAssignment(editAssignmentRequest);
-
         // THEN
-        assertNotNull(updatedAssignments, "Expected updated assignments to not be null");
-        assertEquals("Updated Assignment", updatedAssignments.get(0).getName(), "Expected assignment name to be updated");
+        assertThrows(IllegalArgumentException.class, () -> {
+            service.getStudentByName(invalidTeacherUsername, invalidStudentName);
+        });
     }
 
     @Test
-    public void deleteAssignment_validRequest_removesAssignment() {
+    public void getStudentByName_ValidTeacherNameInvalidStudent_emptyList() {
         // GIVEN
-        when(studentRepository.findById(1L)).thenReturn(Optional.of(testStudent));
+        String invalidStudentName = "a null student";
 
         // WHEN
-        List<Assignment> updatedAssignments = service.deleteAssignment(deleteAssignmentRequest);
+        Mockito.when(teacherRepository.findByUsername(testTeacher.getUsername()))
+                .thenReturn(Optional.ofNullable(testTeacher));
+        PublicStudentDTO response = service.getStudentByName(testTeacher.getUsername() , invalidStudentName);
 
         // THEN
-        assertNotNull(updatedAssignments, "Expected updated assignments to not be null");
-        assertTrue(updatedAssignments.isEmpty(), "Expected assignment list to be empty after deletion");
+        assertNull(response);
     }
+
+    @Test
+    public void addStudent_validRequest_updatedListOfStudents() {
+        // GIVEN
+        Set<String> subjects = new HashSet<>();
+        subjects.add("math");
+        testTeacher.setSubjects(subjects);
+
+        List<Student> fakeStudents = List.of(new Student("fake", 1));
+        testTeacher.setStudents(fakeStudents);
+        AddStudentRequest request = new AddStudentRequest("John Doe", 1, "math", BigDecimal.ONE);
+        Mockito.when(teacherRepository.findByUsername(testTeacher.getUsername()))
+                .thenReturn(Optional.of(testTeacher));
+        Mockito.when(authorityRepository.findByAuthority("STUDENT")).thenReturn(Optional.of(new Role("STUDENT")));
+        Mockito.when(assignmentsRepository.save(Mockito.any())).thenReturn(new Assignments());
+        Mockito.when(studentRepository.save(Mockito.any())).thenReturn(testStudent);
+
+        // Act
+        TeacherStudentList response = service.addStudent(request, "james");
+
+        // Assert
+        Mockito.verify(teacherRepository, Mockito.times(1)).save(testTeacher);
+    }
+
+    @Test
+    public void addStudent_InvalidRequest_throwsNullPointer() {
+        // GIVEN
+        AddStudentRequest request = new AddStudentRequest("joe", 2, "math", BigDecimal.ONE);
+
+        // WHEN
+        // THEN
+        assertThrows(IllegalArgumentException.class, () -> {
+            service.addStudent(request,"invalidTeacher");
+        });
+    }
+
+    @Test
+    public void editExistingStudent_validRequest_ListOfStudents() {
+        // GIVEN
+        Set<String> subjects = new HashSet<>();
+        subjects.add("math");
+        testTeacher.setSubjects(subjects);
+
+
+        Long studentId = 1L;
+        List<Student> students = new ArrayList<>();
+        testStudent.setStudentId(studentId);
+        students.add(testStudent);
+        testTeacher.setStudents(students);
+        testStudent.setTeacher(testTeacher);
+
+        Assignments assignments = new Assignments("math", 1, testStudent);
+        testStudent.setAssignments(List.of(assignments));
+
+        EditStudentRequest request = new EditStudentRequest();
+        request.setStudentId(studentId);
+        request.setNameToChange("kenny");
+        request.setPeriodToChange(Optional.of(1));
+
+        // WHEN
+        Mockito.when(studentRepository.findById(studentId)).thenReturn(
+                Optional.of(testStudent)
+        );
+        PublicStudentDTO response = service.editExistingStudent(request);
+
+        // THEN
+        assertNotNull(response);
+        Mockito.verify(studentRepository, Mockito.times(1)).save(Mockito.any(Student.class));
+    }
+
+    @Test
+    public void editExistingStudent_InvalidRequest_throwsIllegalArgument() {
+        // GIVEN
+        EditStudentRequest invalidRequest = new EditStudentRequest();
+
+        // WHEN
+        // THEN
+        assertThrows(EntityNotFoundException.class, () -> {
+            service.editExistingStudent(invalidRequest);
+        });
+    }
+
+    @Test
+    public void editExistingStudent_IncompleteRequest_returnsUpdatedList() {
+        // GIVEN
+        Long studentId = 1L;
+        List<Student> students = new ArrayList<>();
+        testStudent.setStudentId(studentId);
+        students.add(testStudent);
+        testTeacher.setStudents(students);
+
+        EditStudentRequest request = new EditStudentRequest();
+        request.setStudentId(studentId);
+
+        // WHEN
+        Mockito.when(studentRepository.findById(studentId)).thenReturn(
+                Optional.of(testStudent)
+        );
+        PublicStudentDTO response = service.editExistingStudent(request);
+
+        // THEN
+        assertNotNull(response);
+        Mockito.verify(studentRepository, Mockito.times(1)).save(Mockito.any(Student.class));
+    }
+
+    @Test
+    public void deleteStudent_validRequest() {
+        // GIVEN
+        Long studentId = 1L;
+        List<Student> students = new ArrayList<>();
+        testStudent.setStudentId(studentId);
+        students.add(testStudent);
+        testTeacher.setStudents(students);
+
+
+        // WHEN
+        Mockito.when(teacherRepository.findByUsername(testTeacher.getUsername()))
+                .thenReturn(Optional.ofNullable(testTeacher));
+        service.deleteStudent(new DeleteStudentRequest(1, studentId), testTeacher.getUsername());
+
+        Mockito.verify(teacherRepository, Mockito.times(1)).save(testTeacher);
+        Mockito.verify(studentRepository, Mockito.times(1)).delete(testStudent);
+        assertEquals(0, testTeacher.getStudents().size());
+    }
+
+    @Test
+    public void deleteStudent_InvalidRequest_throwsNullPointer() {
+        // GIVEN
+        // WHEN
+        // THEN
+        assertThrows(NullPointerException.class, () -> {
+            service.deleteStudent(new DeleteStudentRequest(1, 3L), testTeacher.getUsername());
+        });
+    }
+
 }
