@@ -11,7 +11,7 @@ import java.time.LocalDate;
 @Table(name = "assignment_table")
 @Data
 @EqualsAndHashCode
-@ToString
+@ToString(exclude = "assignmentList")
 @Getter
 @Setter
 @NoArgsConstructor

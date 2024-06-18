@@ -11,7 +11,7 @@ import java.util.*;
 @Table(name = "teachers")
 @Data
 @EqualsAndHashCode
-@ToString
+@ToString(exclude = "students")
 @Getter
 @Setter
 public class Teacher implements UserDetails {

@@ -13,7 +13,7 @@ import java.util.*;
 @Table(name="students")
 @Data
 @EqualsAndHashCode
-@ToString
+@ToString(exclude = "teacher")
 @Getter
 @Setter
 public class Student implements UserDetails {
