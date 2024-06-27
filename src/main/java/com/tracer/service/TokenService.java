@@ -67,6 +67,11 @@ public class TokenService {
         return jwt;
     }
 
+    /**
+     * Generates a refresh token using the users Authentication, with and expiration of 7 hours.
+     * @param auth the users username and password.
+     * @return A newly created Refresh token.
+     */
     public String generateRefreshToken(Authentication auth) {
         Instant now = Instant.now();
 
@@ -131,6 +136,10 @@ public class TokenService {
         }
     }
 
+    /**
+     * Finds Jwt by the String jwt then invalidates it.
+     * @param jwt A string of characters.
+     */
     public void invalidateUserToken(String jwt) {
         var token = tokenRepository.findByJwt(jwt)
                 .orElseThrow();
@@ -161,6 +170,11 @@ public class TokenService {
         }
     }
 
+    /**
+     * Checks whether the refresh token is valid or not. if not will throw an
+     * ExpiredTokenException and invalidate the token.
+     * @param token String of characters representing the refresh token.
+     */
     public void validateRefreshToken(String token) {
         var refreshToken = refreshTokenRepository.findByToken(token)
                 .orElseThrow();

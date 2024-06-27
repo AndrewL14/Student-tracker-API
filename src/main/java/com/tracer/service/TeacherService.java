@@ -33,6 +33,11 @@ public class TeacherService implements UserDetailsService {
     private AssignmentsRepository assignmentsRepository;
     private final Logger logger = LoggerFactory.getLogger(TeacherService.class);
 
+    /**
+     * Creates a new teacher and saves it to the database.
+     * @param request Information needed to create a new teacher.
+     * @return A newly made teacher object.
+     */
     public Teacher createTeacher(CreateTeacherRequest request) {
         Role teacherAuthority = authorityRepository.findByAuthority(Authority.TEACHER.toString()).get();
         HashSet<Role> authorities = new HashSet<>();
@@ -50,6 +55,13 @@ public class TeacherService implements UserDetailsService {
         return createdTeacher;
     }
 
+    /**
+     * Uses the new values given to update and save a teacher.
+     * The method will only edit values if the value is present in the request allowing for NullPointers.
+     * @param request new values to update the teacher with.
+     * @param username the teacher's username.
+     * @return An updated teacher.
+     */
     public Teacher editTeacher(EditTeacherRequest request, String username) {
         Teacher teacher = teacherRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException(
@@ -66,6 +78,10 @@ public class TeacherService implements UserDetailsService {
         return teacher;
     }
 
+    /**
+     * Finds the teacher by their username and deletes it from the database.
+     * @param username The teacher's username.
+     */
     public void deleteTeacherByUsername(String username) {
         teacherRepository.delete(
                 teacherRepository.findByUsername(username)
@@ -73,6 +89,10 @@ public class TeacherService implements UserDetailsService {
                                 String.format("Could not find teacher with username: %s", username))));
     }
 
+    /**
+     * Finds the teacher by their database ID and deletes it from the database.
+     * @param id The teacher objects unique database ID.
+     */
     public void deleteTeacherById(Long id) {
         teacherRepository.delete(
                 teacherRepository.findById(id)
@@ -80,6 +100,10 @@ public class TeacherService implements UserDetailsService {
                                 String.format("Could not find teacher with id: %d", id))));
     }
 
+    /**
+     * Can save or save an updated teacher.
+     * @param teacher either newly created or updated teacher to save to the database.
+     */
     public void saveTeacher(Teacher teacher) {
         teacherRepository.save(teacher);
     }
