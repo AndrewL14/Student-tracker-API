@@ -108,6 +108,12 @@ public class AuthenticationService {
                 jwt, refreshToken, teacher.getSubjects());
     }
 
+    /**
+     * uses a student's email and password to authenticate a student and create a jwt/refresh token.
+     * @param email a string of characters.
+     * @param password a string of characters.
+     * @return a Student login response containing the students name, jwt, and refreshToken.
+     */
     public StudentLoginResponse loginStudentByEmail(String email, String password) {
         logger.info(String.format("logging in student with email: %s", email));
         Student student = (Student) studentService.loadUserByUsername(email);

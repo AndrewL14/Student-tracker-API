@@ -51,6 +51,9 @@ public class SecurityConfiguration {
         return new BCryptPasswordEncoder();
     }
 
+    /*
+     * Setting  the Dao providers and assigning the user service classes.
+     */
     @Bean
     public AuthenticationManager authManager() {
         DaoAuthenticationProvider teacherAuthProvider = new DaoAuthenticationProvider();
@@ -64,6 +67,10 @@ public class SecurityConfiguration {
         return new ProviderManager(Arrays.asList(teacherAuthProvider, studentAuthProvider));
     }
 
+    /*
+     * Setting security params, what roles can access what controllers, setting up logout
+     * endpoint.
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception{
         http
@@ -104,6 +111,9 @@ public class SecurityConfiguration {
         return new NimbusJwtEncoder(jwks);
     }
 
+    /*
+        Configuring Authorities to use our custom role class.
+     */
     @Bean
     public JwtAuthenticationConverter jwtAuthenticationConverter(){
         JwtGrantedAuthoritiesConverter jwtGrantedAuthoritiesConverter = new JwtGrantedAuthoritiesConverter();
