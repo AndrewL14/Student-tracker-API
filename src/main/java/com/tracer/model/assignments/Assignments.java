@@ -2,7 +2,7 @@ package com.tracer.model.assignments;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
-import com.tracer.model.Student;
+import com.tracer.model.users.Student;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

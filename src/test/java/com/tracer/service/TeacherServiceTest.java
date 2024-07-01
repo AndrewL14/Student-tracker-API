@@ -1,7 +1,7 @@
 package com.tracer.service;
 
 import com.tracer.model.Role;
-import com.tracer.model.Teacher;
+import com.tracer.model.users.Teacher;
 import com.tracer.model.request.teacher.CreateTeacherRequest;
 import com.tracer.model.request.teacher.EditTeacherRequest;
 import com.tracer.repository.AuthorityRepository;

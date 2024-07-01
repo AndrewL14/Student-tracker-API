@@ -1,7 +1,7 @@
 package com.tracer.service;
 import com.tracer.model.tokens.EmailToken;
 import com.tracer.model.tokens.PasswordResetToken;
-import com.tracer.model.Teacher;
+import com.tracer.model.users.Teacher;
 import com.tracer.repository.tokens.EmailTokenRepository;
 import com.tracer.repository.tokens.PasswordResetTokenRepository;
 import com.tracer.repository.TeacherRepository;
@@ -10,8 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;

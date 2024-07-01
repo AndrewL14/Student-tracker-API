@@ -3,7 +3,7 @@ package com.tracer.service;
 import com.tracer.model.tokens.EmailToken;
 import com.tracer.model.tokens.PasswordResetToken;
 import com.tracer.model.Role;
-import com.tracer.model.Teacher;
+import com.tracer.model.users.Teacher;
 import com.tracer.model.response.TeacherLoginResponse;
 import com.tracer.repository.AuthorityRepository;
 import com.tracer.repository.tokens.EmailTokenRepository;

@@ -3,7 +3,7 @@ package com.tracer.converter;
 import com.tracer.model.DTO.PrivateStudentDTO;
 import com.tracer.model.DTO.PublicStudentDTO;
 import com.tracer.model.DTO.TeacherStudentList;
-import com.tracer.model.Student;
+import com.tracer.model.users.Student;
 import com.tracer.model.assignments.Assignment;
 import com.tracer.model.assignments.Assignments;
 import org.junit.jupiter.api.BeforeEach;

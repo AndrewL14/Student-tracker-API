@@ -1,7 +1,7 @@
 package com.tracer.repository.tokens;
 
 import com.tracer.model.tokens.EmailToken;
-import com.tracer.model.Teacher;
+import com.tracer.model.users.Teacher;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.transaction.annotation.Transactional;
 

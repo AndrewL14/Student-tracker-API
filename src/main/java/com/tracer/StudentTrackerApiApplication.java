@@ -1,8 +1,8 @@
 package com.tracer;
 
 import com.tracer.model.Role;
-import com.tracer.model.Student;
-import com.tracer.model.Teacher;
+import com.tracer.model.users.Student;
+import com.tracer.model.users.Teacher;
 import com.tracer.model.assignments.Assignment;
 import com.tracer.model.assignments.Assignments;
 import com.tracer.model.assignments.AssignmentType;

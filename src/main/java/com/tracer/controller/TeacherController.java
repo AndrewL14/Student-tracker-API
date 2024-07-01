@@ -1,9 +1,8 @@
 package com.tracer.controller;
 
-import com.tracer.model.DTO.PrivateStudentDTO;
 import com.tracer.model.DTO.PublicStudentDTO;
 import com.tracer.model.DTO.TeacherStudentList;
-import com.tracer.model.Teacher;
+import com.tracer.model.users.Teacher;
 import com.tracer.model.assignments.Assignment;
 import com.tracer.model.assignments.Assignments;
 import com.tracer.model.request.assignment.AddAssignmentRequest;

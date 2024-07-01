@@ -2,7 +2,7 @@ package com.tracer.service;
 
 import com.tracer.model.tokens.EmailToken;
 import com.tracer.model.tokens.PasswordResetToken;
-import com.tracer.model.Teacher;
+import com.tracer.model.users.Teacher;
 import com.tracer.repository.tokens.EmailTokenRepository;
 import com.tracer.repository.tokens.PasswordResetTokenRepository;
 import com.tracer.repository.TeacherRepository;

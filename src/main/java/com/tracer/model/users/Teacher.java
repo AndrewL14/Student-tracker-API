@@ -1,6 +1,7 @@
-package com.tracer.model;
+package com.tracer.model.users;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.tracer.model.Role;
 import jakarta.persistence.*;
 import lombok.*;
 import org.springframework.security.core.userdetails.UserDetails;

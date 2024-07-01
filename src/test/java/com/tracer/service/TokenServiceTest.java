@@ -1,6 +1,6 @@
 package com.tracer.service;
 
-import com.tracer.model.Teacher;
+import com.tracer.model.users.Teacher;
 import com.tracer.repository.AuthorityRepository;
 import com.tracer.repository.TeacherRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -9,9 +9,6 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.oauth2.jwt.JwtEncoder;
-
-import java.util.ArrayList;
-import java.util.HashSet;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;

@@ -1,7 +1,8 @@
-package com.tracer.model;
+package com.tracer.model.users;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
+import com.tracer.model.Role;
 import com.tracer.model.assignments.Assignments;
 import jakarta.persistence.*;
 import lombok.*;

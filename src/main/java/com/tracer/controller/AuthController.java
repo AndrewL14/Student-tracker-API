@@ -1,6 +1,5 @@
 package com.tracer.controller;
 
-import com.tracer.model.Student;
 import com.tracer.model.request.authentication.BasicLoginRequest;
 import com.tracer.model.request.authentication.CompletePasswordResetRequest;
 import com.tracer.model.request.authentication.EmailLoginRequest;

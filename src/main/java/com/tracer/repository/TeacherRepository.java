@@ -1,6 +1,6 @@
 package com.tracer.repository;
 
-import com.tracer.model.Teacher;
+import com.tracer.model.users.Teacher;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 

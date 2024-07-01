@@ -1,6 +1,6 @@
 package com.tracer.service;
 
-import com.tracer.model.Student;
+import com.tracer.model.users.Student;
 import com.tracer.model.assignments.Assignment;
 import com.tracer.model.assignments.Assignments;
 import com.tracer.model.request.assignment.AddAssignmentRequest;
